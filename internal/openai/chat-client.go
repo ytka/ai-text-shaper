@@ -34,18 +34,18 @@ type Response struct {
 	} `json:"usage"`
 }
 
-func CallOpenAI(apiKey string, model, prompt string) (string, error) {
+func SendChatMessage(apiKey string, model, prompt string) (*Response, error) {
 	requestBody, err := json.Marshal(Request{
 		Model:    model,
 		Messages: []Message{{Role: "user", Content: prompt}},
 	})
 	if err != nil {
-		return "", fmt.Errorf("failed to marshal request body: %w", err)
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
@@ -53,28 +53,22 @@ func CallOpenAI(apiKey string, model, prompt string) (string, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed to execute request: %w", err)
+		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read response body: %w", err)
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var openAIResponse Response
 	err = json.Unmarshal(body, &openAIResponse)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-
-	var result string
-	for _, choice := range openAIResponse.Choices {
-		result += choice.Message.Content
-	}
-
-	return result, nil
+	return &openAIResponse, nil
 }
