@@ -3,7 +3,7 @@ package cmd
 import "log"
 
 func verboseLog(msg string, args ...interface{}) {
-	if opts.verbose {
+	if fl.verbose {
 		log.Printf(msg, args...)
 	}
 }

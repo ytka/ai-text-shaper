@@ -10,19 +10,11 @@ import (
 	"strings"
 )
 
-type options struct {
-	prompt     string
-	promptPath string
+var fl flags
 
-	verbose bool
-	silent  bool
-	diff    bool
-
-	rewrite bool
-	outpath string
+func init() {
+	fl.initCommandFlags(rootCmd)
 }
-
-var opts options
 
 func Execute() {
 	err := rootCmd.Execute()
@@ -32,18 +24,6 @@ func Execute() {
 	}
 }
 
-func init() {
-	rootCmd.Flags().StringVarP(&opts.prompt, "prompt", "p", "", "Prompt text")
-	rootCmd.Flags().StringVarP(&opts.promptPath, "prompt-path", "P", "", "Prompt file path")
-
-	rootCmd.Flags().BoolVarP(&opts.verbose, "verbose", "v", false, "Verbose mode")
-	rootCmd.Flags().BoolVarP(&opts.silent, "silent", "s", false, "Silent mode")
-	rootCmd.Flags().BoolVarP(&opts.diff, "diff", "d", false, "Show diff")
-
-	rootCmd.Flags().BoolVarP(&opts.rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
-	rootCmd.Flags().StringVarP(&opts.outpath, "outpath", "o", "", "Output file path")
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "ai-text-shaper",
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
@@ -51,7 +31,7 @@ var rootCmd = &cobra.Command{
 	// Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		verboseLog("ai-text-shaper started")
-		verboseLog("opts: %+v", opts)
+		verboseLog("flags: %+v", fl)
 		verboseLog("args: %v", args)
 
 		apikey, err := getAPIKey()
@@ -65,13 +45,13 @@ var rootCmd = &cobra.Command{
 			inputFilePath = args[0]
 		}
 
-		outpath := opts.outpath
-		if opts.rewrite {
+		outpath := fl.outpath
+		if fl.rewrite {
 			outpath = inputFilePath
 		}
 
 		verboseLog("start reading prompt")
-		promptText, err := getPromptText(opts.prompt, opts.promptPath)
+		promptText, err := getPromptText(fl.prompt, fl.promptPath)
 		if err != nil {
 			return err
 		}
@@ -89,8 +69,8 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		if !opts.silent {
-			if opts.diff {
+		if !fl.silent {
+			if fl.diff {
 				dmp := diffmatchpatch.New()
 				a, b, c := dmp.DiffLinesToChars(inputText, resultText)
 				diffs := dmp.DiffMain(a, b, false)
