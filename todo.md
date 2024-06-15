@@ -1,8 +1,8 @@
 
 
-- コード本体のみを出力するモード
 - 言語オプション
 - 任意のスクリプトを指定しやすくする
 
-- review command
-- testコードを出力する
+# prompts
+- review
+- testコード
