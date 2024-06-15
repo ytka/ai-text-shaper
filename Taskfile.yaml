@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  commit:
+    desc: Commit changes to the repository
+    cmds:
+      #- git add .
+      - git diff | go run main.go -P=prompts/commit-msg.txt
+  commit-cached:
+    desc: Commit changes to the repository
+    cmds:
+      - git diff --cached | go run main.go -P=prompts/commit-msg.txt
