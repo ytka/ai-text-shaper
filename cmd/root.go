@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
+	"io"
 	"os"
 	"strings"
 )
@@ -43,14 +44,19 @@ var rootCmd = &cobra.Command{
 	Use:   "ai-text-shaper",
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
-	Args:  cobra.ExactArgs(1),
+	// Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		apikey, err := getAPIKey()
 		if err != nil {
 			return fmt.Errorf("failed to get API key: %w", err)
 		}
 
-		inputFilePath := args[0]
+		inputFilePath := "-"
+		if len(args) > 1 {
+			// FIXME: larger case
+			inputFilePath = args[0]
+		}
+
 		if rewrite {
 			outpath = inputFilePath
 		}
@@ -116,6 +122,14 @@ func getPromptText(prompt, promptPath string) (string, error) {
 }
 
 func getInputText(inputFilePath string) (string, error) {
+	if inputFilePath == "-" {
+		input, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return "", fmt.Errorf("error reading input from stdin: %w", err)
+		}
+		return string(input), nil
+	}
+
 	input, err := os.ReadFile(inputFilePath)
 	if err != nil {
 		return "", fmt.Errorf("error reading input file: %w", err)
