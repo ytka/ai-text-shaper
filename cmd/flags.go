@@ -12,6 +12,8 @@ type flags struct {
 
 	rewrite bool
 	outpath string
+
+	useFirstCodeBlock bool
 }
 
 func (f *flags) initCommandFlags(cmd *cobra.Command) {
@@ -24,4 +26,6 @@ func (f *flags) initCommandFlags(cmd *cobra.Command) {
 
 	cmd.Flags().BoolVarP(&f.rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
 	cmd.Flags().StringVarP(&f.outpath, "outpath", "o", "", "Output file path")
+
+	cmd.Flags().BoolVarP(&f.useFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
 }

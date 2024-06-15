@@ -7,6 +7,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
 	"os"
+	"regexp"
 )
 
 var fl flags
@@ -61,20 +62,32 @@ func run(args []string) error {
 		return err
 	}
 
+	outputText := resultText
+	if fl.useFirstCodeBlock {
+		re, err := regexp.Compile("(?s)```[a-zA-Z0-9]*?\n(.*?)```")
+		if err != nil {
+			return fmt.Errorf("error compiling regex: %w", err)
+		}
+		match := re.FindStringSubmatch(resultText)
+		if match != nil {
+			outputText = match[1]
+		}
+	}
+
 	if !fl.silent {
+		fmt.Println(resultText)
 		if fl.diff {
 			dmp := diffmatchpatch.New()
-			a, b, c := dmp.DiffLinesToChars(inputText, resultText)
+			a, b, c := dmp.DiffLinesToChars(inputText, outputText)
 			diffs := dmp.DiffMain(a, b, false)
 			diffs = dmp.DiffCharsToLines(diffs, c)
 			fmt.Println(dmp.DiffPrettyText(diffs))
 		} else {
-			fmt.Println(resultText)
 		}
 	}
 	if outpath != "" {
 		verboseLog("writing to file: %s", outpath)
-		if err := st.WriteToFile(outpath, resultText); err != nil {
+		if err := st.WriteToFile(outpath, outputText); err != nil {
 			return fmt.Errorf("error writing to file: %w", err)
 		}
 	}
