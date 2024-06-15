@@ -1,4 +1,4 @@
-package main
+package openai
 
 import (
 	"bytes"
@@ -8,16 +8,16 @@ import (
 	"net/http"
 )
 
-type OpenAIMessage struct {
+type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
-type OpenAIRequest struct {
-	Model    string          `json:"model"`
-	Messages []OpenAIMessage `json:"messages"`
+type Request struct {
+	Model    string    `json:"model"`
+	Messages []Message `json:"messages"`
 }
 
-type OpenAIResponse struct {
+type Response struct {
 	Choices []struct {
 		Index   int `json:"index"`
 		Message struct {
@@ -34,10 +34,10 @@ type OpenAIResponse struct {
 	} `json:"usage"`
 }
 
-func callOpenAI(apiKey string, model, prompt string) (string, error) {
-	requestBody, err := json.Marshal(OpenAIRequest{
+func CallOpenAI(apiKey string, model, prompt string) (string, error) {
+	requestBody, err := json.Marshal(Request{
 		Model:    model,
-		Messages: []OpenAIMessage{{Role: "user", Content: prompt}},
+		Messages: []Message{{Role: "user", Content: prompt}},
 	})
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal request body: %w", err)
@@ -65,7 +65,7 @@ func callOpenAI(apiKey string, model, prompt string) (string, error) {
 		return "", fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var openAIResponse OpenAIResponse
+	var openAIResponse Response
 	err = json.Unmarshal(body, &openAIResponse)
 	if err != nil {
 		return "", err

@@ -1,0 +1,106 @@
+package cmd
+
+import (
+	"ai-text-shaper/internal/textshaper"
+	"fmt"
+	"github.com/sergi/go-diff/diffmatchpatch"
+	"github.com/spf13/cobra"
+	"os"
+	"strings"
+)
+
+var (
+	silent bool
+
+	// exclusive flags
+	diff    bool
+	rewrite bool
+	outpath string
+)
+
+func prepare(promptFilePath string, inputFilePath string) (string, string, error) {
+	prompt, err := os.ReadFile(promptFilePath)
+	if err != nil {
+		return "", "", fmt.Errorf("error reading prompt file: %w", err)
+	}
+	input, err := os.ReadFile(inputFilePath)
+	if err != nil {
+		return "", "", fmt.Errorf("error reading input file: %w", err)
+	}
+	return string(prompt), string(input), nil
+}
+
+var rootCmd = &cobra.Command{
+	Use:   "ai-text-shaper",
+	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
+	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
+	Args:  cobra.ExactArgs(2),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		apikey, err := getAPIKey()
+		if err != nil {
+			return fmt.Errorf("failed to get API key: %w", err)
+		}
+		promptFilePath := args[0]
+		inputFilePath := args[1]
+		if rewrite {
+			outpath = inputFilePath
+		}
+
+		prompt, inputText, err := prepare(promptFilePath, inputFilePath)
+		if err != nil {
+			return err
+		}
+		resultText, err := textshaper.ShapeText(apikey, prompt, inputText)
+		if err != nil {
+			return err
+		}
+
+		if !silent {
+			if diff {
+				dmp := diffmatchpatch.New()
+				a, b, c := dmp.DiffLinesToChars(inputText, resultText)
+				diffs := dmp.DiffMain(a, b, false)
+				diffs = dmp.DiffCharsToLines(diffs, c)
+				fmt.Println(dmp.DiffPrettyText(diffs))
+			} else {
+				fmt.Println(resultText)
+			}
+		}
+		if outpath != "" {
+			fmt.Println("Writing to file...", outpath)
+			if err := os.WriteFile(outpath, []byte(resultText), 0644); err != nil {
+				return fmt.Errorf("error writing to file: %w", err)
+			}
+		}
+
+		return nil
+	},
+}
+
+func Execute() {
+	err := rootCmd.Execute()
+	if err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func init() {
+	rootCmd.Flags().BoolVarP(&silent, "silent", "s", false, "Silent mode")
+	rootCmd.Flags().BoolVarP(&diff, "diff", "d", false, "Show diff")
+	rootCmd.Flags().BoolVarP(&rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
+	rootCmd.Flags().StringVarP(&outpath, "outpath", "o", "", "Output file path")
+}
+
+func getAPIKey() (string, error) {
+	apiKeyFilePath := os.Getenv("HOME") + "/.openai-apikey"
+	bytes, err := os.ReadFile(apiKeyFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read API key: %w", err)
+	}
+	return strings.TrimSuffix(string(bytes), "\n"), nil
+}
+
+func writeToFile(filePath, content string) error {
+	return os.WriteFile(filePath, []byte(content), 0644)
+}

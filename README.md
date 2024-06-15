@@ -1,6 +1,6 @@
-# AITextShaper
+# ai-text-shaper
 
-AITextShaper is a tool designed to shape and transform text using OpenAI's GPT-4 model. It provides functionalities to rewrite, generate, and print text based on given prompts and input files.
+ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model. It provides functionalities to rewrite, generate, and print text based on given prompts and input files.
 
 ## Features
 
