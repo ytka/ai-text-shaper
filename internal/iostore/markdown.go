@@ -6,7 +6,7 @@ import (
 )
 
 func FindMarkdownFirstCodeBlock(text string) (string, error) {
-	re, err := regexp.Compile("(?s)```[a-zA-Z0-9]*?\n(.*?)```")
+	re, err := regexp.Compile("(?s)```[a-zA-Z0-9]*?\n(.*?)\n```")
 	if err != nil {
 		return "", fmt.Errorf("error compiling regex: %w", err)
 	}

@@ -1,12 +1,12 @@
 version: '3'
 
 tasks:
-  commit:
+  auto-commit:
     desc: Commit changes to the repository
     cmds:
-      #- git add .
-      - git diff | go run main.go -P=prompts/commit-msg.txt
-  commit-cached:
+      - git add .
+      - git diff | go run main.go -P=prompts/commit-msg.txt | git commit -F -
+  auto-commit-cached:
     desc: Commit changes to the repository
     cmds:
-      - git diff --cached | go run main.go -P=prompts/commit-msg.txt
+      - git diff --cached | go run main.go -P=prompts/commit-msg.txt | git commit -F -

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 )
 
 var fl flags
@@ -67,9 +68,10 @@ func run(args []string) error {
 			outputText = codeBlock
 		}
 	}
+	outputText = strings.TrimSuffix(outputText, "\n")
 
 	if !fl.silent {
-		fmt.Println(resultText)
+		fmt.Println(outputText)
 		if fl.diff {
 			fmt.Println(iostore.Diff(inputText, outputText))
 		} else {
