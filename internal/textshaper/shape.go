@@ -19,13 +19,16 @@ func ShapeText(apiKey, prompt, input string) (string, error) {
 	}
 	result = strings.TrimSuffix(result, "\n")
 	result = strings.TrimSpace(result)
-	lines := strings.Split(result, "\n")
-	if len(lines) > 0 && strings.HasPrefix(result, "```") {
-		lines = lines[1:]
-	}
-	if len(lines) > 0 && strings.HasSuffix(result, "```") {
-		lines = lines[:len(lines)-1]
-	}
+	/*
+		lines := strings.Split(result, "\n")
+		if len(lines) > 0 && strings.HasPrefix(result, "```") {
+			lines = lines[1:]
+		}
+		if len(lines) > 0 && strings.HasSuffix(result, "```") {
+			lines = lines[:len(lines)-1]
+		}
 
-	return strings.Join(lines, "\n") + "\n", nil
+		return strings.Join(lines, "\n") + "\n", nil
+	*/
+	return result + "\n", nil
 }
