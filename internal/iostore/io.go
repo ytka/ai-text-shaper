@@ -1,4 +1,4 @@
-package tio
+package iostore
 
 import (
 	"fmt"
@@ -7,19 +7,22 @@ import (
 	"strings"
 )
 
-type logger interface {
+type Logger interface {
 	Msg(msg string, args ...interface{})
+	VerboseMsg(msg string, args ...interface{})
 }
 
-type TIO struct {
-	logger logger
+type IOStore struct {
+	verboseLog func(msg string, args ...interface{})
 }
 
-func NewTIO(logger logger) *TIO {
-	return &TIO{logger: logger}
+func New(logger func(msg string, args ...interface{})) *IOStore {
+	return &IOStore{verboseLog: logger}
 }
 
-func GetAPIKey() (string, error) {
+func (ios *IOStore) GetAPIKey() (string, error) {
+	ios.verboseLog("Getting API key")
+
 	apiKeyFilePath := os.Getenv("HOME") + "/.openai-apikey"
 	bytes, err := os.ReadFile(apiKeyFilePath)
 	if err != nil {
@@ -28,7 +31,9 @@ func GetAPIKey() (string, error) {
 	return strings.TrimSuffix(string(bytes), "\n"), nil
 }
 
-func GetPromptText(prompt, promptPath string) (string, error) {
+func (ios *IOStore) GetPromptText(prompt, promptPath string) (string, error) {
+	ios.verboseLog("Getting prompt text")
+
 	if prompt == "" && promptPath == "" {
 		return "", fmt.Errorf("prompt is required")
 	}
@@ -42,7 +47,9 @@ func GetPromptText(prompt, promptPath string) (string, error) {
 	return prompt, nil
 }
 
-func GetInputText(inputFilePath string) (string, error) {
+func (ios *IOStore) GetInputText(inputFilePath string) (string, error) {
+	ios.verboseLog("Getting input text")
+
 	if inputFilePath == "-" {
 		input, err := io.ReadAll(os.Stdin)
 		if err != nil {
@@ -58,7 +65,9 @@ func GetInputText(inputFilePath string) (string, error) {
 	return string(input), nil
 }
 
-func WriteToFile(path, content string) error {
+func (ios *IOStore) WriteToFile(path, content string) error {
+	ios.verboseLog("Writing to file: %s", path)
+
 	if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 		return fmt.Errorf("error writing to file: %w", err)
 	}
