@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"ai-text-shaper/internal/textshaper"
+	"ai-text-shaper/internal/tio"
 	"fmt"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/spf13/cobra"
-	"io"
 	"os"
-	"strings"
 )
 
 var fl flags
@@ -34,7 +33,7 @@ var rootCmd = &cobra.Command{
 		verboseLog("flags: %+v", fl)
 		verboseLog("args: %v", args)
 
-		apikey, err := getAPIKey()
+		apikey, err := tio.GetAPIKey()
 		if err != nil {
 			return fmt.Errorf("failed to get API key: %w", err)
 		}
@@ -51,13 +50,13 @@ var rootCmd = &cobra.Command{
 		}
 
 		verboseLog("start reading prompt")
-		promptText, err := getPromptText(fl.prompt, fl.promptPath)
+		promptText, err := tio.GetPromptText(fl.prompt, fl.promptPath)
 		if err != nil {
 			return err
 		}
 
 		verboseLog("start reading input: %s", inputFilePath)
-		inputText, err := getInputText(inputFilePath)
+		inputText, err := tio.GetInputText(inputFilePath)
 		if err != nil {
 			return err
 		}
@@ -81,51 +80,12 @@ var rootCmd = &cobra.Command{
 			}
 		}
 		if outpath != "" {
-			fmt.Println("Writing to file...", outpath)
-			if err := os.WriteFile(outpath, []byte(resultText), 0644); err != nil {
+			verboseLog("writing to file: %s", outpath)
+			if err := tio.WriteToFile(outpath, resultText); err != nil {
 				return fmt.Errorf("error writing to file: %w", err)
 			}
 		}
 
 		return nil
 	},
-}
-
-func getAPIKey() (string, error) {
-	apiKeyFilePath := os.Getenv("HOME") + "/.openai-apikey"
-	bytes, err := os.ReadFile(apiKeyFilePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read API key: %w", err)
-	}
-	return strings.TrimSuffix(string(bytes), "\n"), nil
-}
-
-func getPromptText(prompt, promptPath string) (string, error) {
-	if prompt == "" && promptPath == "" {
-		return "", fmt.Errorf("prompt is required")
-	}
-	if prompt == "" && promptPath != "" {
-		text, err := os.ReadFile(promptPath)
-		if err != nil {
-			return "", fmt.Errorf("error reading prompt file: %w", err)
-		}
-		return string(text), nil
-	}
-	return prompt, nil
-}
-
-func getInputText(inputFilePath string) (string, error) {
-	if inputFilePath == "-" {
-		input, err := io.ReadAll(os.Stdin)
-		if err != nil {
-			return "", fmt.Errorf("error reading input from stdin: %w", err)
-		}
-		return string(input), nil
-	}
-
-	input, err := os.ReadFile(inputFilePath)
-	if err != nil {
-		return "", fmt.Errorf("error reading input file: %w", err)
-	}
-	return string(input), nil
 }
