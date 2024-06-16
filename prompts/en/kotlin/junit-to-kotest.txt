@@ -1,1 +1,1 @@
-Convert the following program to the Kotest FunSpec format.
+Convert the following program to Kotest's FunSpec format.

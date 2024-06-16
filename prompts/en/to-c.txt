@@ -1,1 +1,1 @@
-Convert the following program to C language. No explanation needed. Just return the results in a directly savable text format.
+Translate the following program into C language. Explanation is not necessary. Provide only the result in a text format that can be saved as is.
