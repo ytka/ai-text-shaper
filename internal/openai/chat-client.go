@@ -105,9 +105,9 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string) (*Response, error) 
 	if resp.StatusCode > 299 {
 		var errorResponse ErrorResponse
 		if err := json.Unmarshal(body, &errorResponse); err != nil {
-			return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, body)
+			return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, body)
 		}
-		return nil, fmt.Errorf("unexpected status code: %d, %s", resp.StatusCode, errorResponse.Error.Message)
+		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
 	}
 
 	var openAIResponse Response
