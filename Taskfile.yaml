@@ -3,8 +3,15 @@ version: '3'
 tasks:
   build:
     desc: Build the project
+    vars:
+      Version:
+        sh: git describe --abbrev=0 --tags
+      Commit:
+        sh: git rev-list -1 HEAD
+      Date:
+        sh: date -u '+%Y-%m-%d_%I:%M:%S%p'
     cmds:
-      - go build
+      - go build -ldflags="-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=local-build"
   install:
     desc: Install dependencies
     deps: [build]
