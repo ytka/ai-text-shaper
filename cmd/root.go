@@ -1,18 +1,29 @@
 package cmd
 
 import (
-	"ai-text-shaper/internal/iostore"
-	"ai-text-shaper/internal/textshaper"
+	"ai-text-shaper/internal/runner"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
-	"strings"
 )
 
-var fl flags
+var c runner.Config
 
 func init() {
-	fl.initCommandFlags(rootCmd)
+	// prompt options
+	rootCmd.Flags().StringVarP(&c.Prompt, "prompt", "p", "", "Prompt text")
+	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
+
+	// stdout messages options
+	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
+	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
+	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
+
+	// write file options
+	rootCmd.Flags().BoolVarP(&c.Rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
+	rootCmd.Flags().StringVarP(&c.Outpath, "outpath", "o", "", "Output file path")
+	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", true, "Use the first code block in the output text")
+	rootCmd.Flags().BoolVarP(&c.ConfirmBeforeWriting, "confirm-before-write", "c", false, "Confirm before writing to file")
 }
 
 func Execute() {
@@ -22,77 +33,11 @@ func Execute() {
 	}
 }
 
-func run(args []string) error {
-	st := iostore.New(verboseLog)
-
-	apikey, err := st.GetAPIKey()
-	if err != nil {
-		return fmt.Errorf("failed to get API key: %w", err)
-	}
-
-	inputFilePath := "-"
-	if len(args) >= 1 {
-		// FIXME: larger case
-		inputFilePath = args[0]
-	}
-
-	outpath := fl.outpath
-	if fl.rewrite {
-		outpath = inputFilePath
-	}
-
-	promptText, err := st.GetPromptText(fl.prompt, fl.promptPath)
-	if err != nil {
-		return err
-	}
-
-	inputText, err := st.GetInputText(inputFilePath)
-	if err != nil {
-		return err
-	}
-
-	verboseLog("start shaping text")
-	resultText, err := textshaper.ShapeText(apikey, promptText, inputText)
-	verboseLog("end shaping text")
-	if err != nil {
-		return err
-	}
-
-	outputText := resultText
-	if fl.useFirstCodeBlock {
-		codeBlock, err := iostore.FindMarkdownFirstCodeBlock(resultText)
-		if err != nil {
-			return fmt.Errorf("error finding first code block: %w", err)
-		}
-		if codeBlock != "" {
-			outputText = codeBlock
-		}
-	}
-	outputText = strings.TrimSuffix(outputText, "\n")
-
-	if !fl.silent {
-		fmt.Println(outputText)
-		if fl.diff {
-			fmt.Println(iostore.Diff(inputText, outputText))
-		} else {
-		}
-	}
-	if outpath != "" {
-		if err := st.WriteToFile(outpath, outputText); err != nil {
-			return fmt.Errorf("error writing to file: %w", err)
-		}
-	}
-	return nil
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "ai-text-shaper",
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		verboseLog("ai-text-shaper started")
-		verboseLog("flags: %+v", fl)
-		verboseLog("args: %v", args)
-		return run(args)
+		return runner.New(&c).Run(args)
 	},
 }
