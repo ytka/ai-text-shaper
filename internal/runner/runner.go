@@ -6,6 +6,7 @@ import (
 	"log"
 )
 
+// Runner manages the execution of text processing tasks.
 type Runner struct {
 	config *Config
 }
@@ -22,6 +23,7 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
+// runSingleInput processes a single input file using the GenerativeAIClient.
 func (r *Runner) runSingleInput(index int, inputFilePath string, promptText string, gai process.GenerativeAIClient) error {
 	r.verboseLog("\n")
 	r.verboseLog("[%d] get input text from: %s", index, inputFilePath)
@@ -60,6 +62,7 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	return nil
 }
 
+// Run processing of multiple input files
 func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc) error {
 	r.verboseLog("start run")
 	r.verboseLog("configs: %+v", r.config)
