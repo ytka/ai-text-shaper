@@ -3,11 +3,8 @@ package runner
 import (
 	"ai-text-shaper/internal/openai"
 	"ai-text-shaper/internal/process"
-	"bufio"
 	"fmt"
 	"log"
-	"os"
-	"strings"
 )
 
 type Runner struct {
@@ -75,29 +72,7 @@ func (r *Runner) Run(inputFiles []string) error {
 	}
 	if outpath != "" {
 		r.verboseLog("Writing to file: %s", outpath)
-		return process.WriteResult(resultText, outpath)
+		return process.WriteResult(resultText, outpath, r.config.ConfirmBeforeWriting)
 	}
 	return nil
-}
-
-func confirm(s string, tries int) bool {
-	r := bufio.NewReader(os.Stdin)
-
-	for ; tries > 0; tries-- {
-		fmt.Printf("%s [y/n]: ", s)
-
-		res, err := r.ReadString('\n')
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		// Empty input (i.e. "\n")
-		if len(res) < 2 {
-			continue
-		}
-
-		return strings.ToLower(strings.TrimSpace(res))[0] == 'y'
-	}
-
-	return false
 }
