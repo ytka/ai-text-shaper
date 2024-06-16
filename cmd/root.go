@@ -27,6 +27,9 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.Outpath, "outpath", "o", "", "Output file path")
 	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
 	rootCmd.Flags().BoolVarP(&c.ConfirmBeforeWriting, "confirm", "c", false, "Confirm before writing to file")
+
+	// model options
+	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
 }
 
 func Execute() {
@@ -45,12 +48,12 @@ func getAPIKey() (openai.APIKey, error) {
 	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
 }
 
-func makeGenerativeAIClient() (process.GenerativeAIClient, error) {
+func makeGenerativeAIClient(model string) (process.GenerativeAIClient, error) {
 	apikey, err := getAPIKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get API key: %w", err)
 	}
-	return openai.New(apikey, "gpt-4o"), nil
+	return openai.New(apikey, model), nil
 }
 
 var rootCmd = &cobra.Command{

@@ -37,6 +37,19 @@ type Response struct {
 	} `json:"usage"`
 }
 
+// ErrorResponse represents the JSON structure for the error response
+type ErrorResponse struct {
+	Error ErrorDetail `json:"error"`
+}
+
+// ErrorDetail represents the details of the error
+type ErrorDetail struct {
+	Message string      `json:"message"`
+	Type    string      `json:"type"`
+	Param   interface{} `json:"param"` // Param can be of any type, hence using interface{}
+	Code    string      `json:"code"`
+}
+
 type ChatClient struct {
 	apikey APIKey
 	model  string
@@ -85,17 +98,20 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string) (*Response, error) 
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
-	}
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
+	if resp.StatusCode > 299 {
+		var errorResponse ErrorResponse
+		if err := json.Unmarshal(body, &errorResponse); err != nil {
+			return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, body)
+		}
+		return nil, fmt.Errorf("unexpected status code: %d, %s", resp.StatusCode, errorResponse.Error.Message)
+	}
 
 	var openAIResponse Response
-	err = json.Unmarshal(body, &openAIResponse)
-	if err != nil {
+	if err := json.Unmarshal(body, &openAIResponse); err != nil {
 		return nil, err
 	}
 	return &openAIResponse, nil

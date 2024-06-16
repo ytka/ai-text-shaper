@@ -14,6 +14,8 @@ type Config struct {
 	Outpath              string
 	UseFirstCodeBlock    bool
 	ConfirmBeforeWriting bool
+
+	Model string
 }
 
 func (c *Config) Validate(inputFiles []string) error {

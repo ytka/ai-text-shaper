@@ -11,7 +11,7 @@ type Runner struct {
 	config *Config
 }
 
-type GenerativeAIHandlerFactoryFunc func() (process.GenerativeAIClient, error)
+type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
 
 func New(config *Config) *Runner {
 	return &Runner{config: config}
@@ -76,7 +76,7 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 		Prepare
 	*/
 	r.verboseLog("make generative ai client")
-	gai, err := gaiFactory()
+	gai, err := gaiFactory(r.config.Model)
 	if err != nil {
 		return fmt.Errorf("failed to make generative ai client: %w", err)
 	}
