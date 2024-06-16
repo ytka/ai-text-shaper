@@ -12,8 +12,9 @@ type GenerativeAIClient interface {
 
 func optimizePrompt(prompt, input string) string {
 	supplements := []string{
-		"The subject of the Instruction is the area enclosed by ai-text-shaper-input tag.",
+		"The subject of the Instruction is the area enclosed by the ai-text-shaper-input tag.",
 		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
+		"Provide additional explanations or details only if explicitly requested in the Instruction.",
 		// "Only the result shall be returned.",
 	}
 	supplementation := strings.Join(supplements, " ")
