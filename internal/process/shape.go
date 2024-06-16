@@ -19,6 +19,14 @@ func ShapeText(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock b
 		return "", "", "", err
 	}
 	result := rawResult
+	if strings.HasPrefix(result, "```") && strings.HasSuffix(result, "```") {
+		// remove first and last line
+		lines := strings.Split(result, "\n")
+		if len(lines) > 2 {
+			result = strings.Join(lines[1:len(lines)-1], "\n")
+		}
+	}
+
 	if useFirstCodeBlock {
 		codeBlock, err := findMarkdownFirstCodeBlock(result)
 		if err != nil {

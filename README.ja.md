@@ -1,14 +1,43 @@
-    git clone https://github.com/yourusername/textcrafter.git
-    cd textcrafter
+# ai-text-shaper
+
+ai-text-shaperは、OpenAIのGPTモデルを使用してテキストを形成および変換するためのツールです。指定されたプロンプトや入力ファイルに基づいてテキストを再構築、生成、および印刷する機能を提供します。
+
+## 特徴
+
+- **テキストの再構築**: 特定のプロンプトに基づいて入力テキストの内容を変更します。
+- **テキストの生成**: OpenAIのGPT-4を使用して新しいテキストコンテンツを生成します。
+
+## インストール
+
+1. リポジトリをクローンします:
+    ```sh
+    git clone https://github.com/ytka/ai-text-shaper.git
+    cd ai-text-shaper
     ```
 
-2. Install dependencies:
+2. 依存関係をインストールします:
     ```sh
     go mod tidy
     ```
 
-3. Set up your OpenAI API key:
-    - Create a file named `.openai-apikey` in your home directory and paste your OpenAI API key into this file.
+3. OpenAI APIキーを設定します:
+    - ホームディレクトリに `.ai-text-shaper-apikey` という名前のファイルを作成し、このファイルにOpenAI APIキーを貼り付けます。
 
-## Usage
+## 使用方法
 
+
+### 例
+
+
+## コントリビューション
+
+貢献は歓迎します！改善点や新機能についての提案がありましたら、問題を開くかプルリクエストを提出してください。
+
+## ライセンス
+
+このプロジェクトはMIT Licenseの下でライセンスされています。詳細は[LICENSE](LICENSE)ファイルをご覧ください。
+
+## 謝辞
+
+- GPT-4モデルを提供してくださったOpenAIに感謝します。
+- さまざまなテキスト変換ツールと、柔軟なテキスト形成のニーズがあるコミュニティからインスピレーションを受けました。

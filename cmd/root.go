@@ -25,7 +25,7 @@ func init() {
 	// write file options
 	rootCmd.Flags().BoolVarP(&c.Rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
 	rootCmd.Flags().StringVarP(&c.Outpath, "outpath", "o", "", "Output file path")
-	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", true, "Use the first code block in the output text")
+	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
 	rootCmd.Flags().BoolVarP(&c.ConfirmBeforeWriting, "confirm", "c", false, "Confirm before writing to file")
 }
 

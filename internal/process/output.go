@@ -14,11 +14,11 @@ func diff(leftText, rightText string) string {
 }
 
 func OutputToStdout(outputText, inputText string, useDiff bool) {
-	fmt.Println(outputText)
+	fmt.Print(outputText)
 
 	if useDiff {
 		fmt.Printf("\n====begin of diff==== in size: %d, out size: %d\n", len(inputText), len(outputText))
-		fmt.Println(diff(inputText, outputText))
-		fmt.Println("====end of ddiff====")
+		fmt.Print(diff(inputText, outputText))
+		fmt.Println("====end of diff====")
 	}
 }
