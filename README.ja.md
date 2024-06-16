@@ -1,43 +1,143 @@
 # ai-text-shaper
 
-ai-text-shaperは、OpenAIのGPTモデルを使用してテキストを形成および変換するためのツールです。指定されたプロンプトや入力ファイルに基づいてテキストを再構築、生成、および印刷する機能を提供します。
+## 概要
 
-## 特徴
+`ai-text-shaper`は、OpenAI APIを使い、ソースコードや Markdownなどのテキストファイルに対して、指定したプロンプトに従ってファイルを加工するための CLIツールです。
+プロンプトをカスタマイズすることで、コードのリファクタリングや翻訳、指定した書式への変換ができます。
 
-- **テキストの再構築**: 特定のプロンプトに基づいて入力テキストの内容を変更します。
-- **テキストの生成**: OpenAIのGPT-4を使用して新しいテキストコンテンツを生成します。
+プロンプトは、"英語に翻訳して"など任意のテキストを与えることができます。
+ai-text-shaperは与えられたプロンプトを加工し、OpenAI APIの chat APIで送信し、その結果を整形して標準出力に出力する他、
+元ファイルを書き換える、書き換え前に出力結果を確認してから書き出すなどができます。
+この他のプロンプトの例は、prompts/ にあるファイルを参照してください。
+
 
 ## インストール
 
-1. リポジトリをクローンします:
-    ```sh
-    git clone https://github.com/ytka/ai-text-shaper.git
-    cd ai-text-shaper
-    ```
+`ai-text-shaper`をインストールするには、以下のリンクからバイナリをダウンロードしてください：
 
-2. 依存関係をインストールします:
-    ```sh
-    go mod tidy
-    ```
+[https://github.com/ytka/ai-text-shaper/releases](https://github.com/ytka/ai-text-shaper/releases)
 
-3. OpenAI APIキーを設定します:
-    - ホームディレクトリに `.ai-text-shaper-apikey` という名前のファイルを作成し、このファイルにOpenAI APIキーを貼り付けます。
+## OpenAI APIキーを設定
+このツールはOpenAI APIを利用するため APIキーが必要です。
+ホームディレクトリに `.ai-text-shaper-apikey` という名前のファイルを作成し、OpenAI APIキーを書き込んでください。
 
-## 使用方法
+## 使い方
 
+`ai-text-shaper`の一般的な使用パターンは以下の通りです：
 
-### 例
+```sh
+ai-text-shaper [オプション] [入力ファイル...]
+```
 
+入力ファイルは一つもしくは複数のファイルを指定できます。入力ファイルが指定されない場合、標準入力から読み取ります。
 
-## コントリビューション
+### オプション
 
-貢献は歓迎します！改善点や新機能についての提案がありましたら、問題を開くかプルリクエストを提出してください。
+#### プロンプトオプション
+
+- `-p, --prompt string`
+   - プロンプトのテキストを指定します。
+
+- `-P, --prompt-path string`
+   - プロンプトファイル（テキストファイル）のパスを指定します。このファイルから読み取った文字列をプロンプトとして使用します。
+
+#### 出力オプション
+
+- `-v, --verbose`
+   - 詳細出力を有効にします。
+
+- `-s, --silent`
+   - 全ての出力を抑制します。
+
+- `-d, --diff`
+   - 通常出力に加えて、入力と出力のテキストの差分を表示します。
+
+#### ファイル書き込みオプション
+
+- `-r, --rewrite`
+   - 結果で入力ファイルを書き換えます。
+
+- `-o, --outpath string`
+   - 出力ファイルのパスを指定します。
+
+- `-f, --use-first-code-block`
+   - 出力テキストにコードブロックが含まれる場合、最初のコードブロックを出力に置き換えますて使用します。
+
+- `-c, --confirm`
+   - ファイルに書き込む前に書き込んでよいか確認を求めます。
+
+## 使用例
+
+### 基本的な使用方法
+
+プロンプトをコマンドラインから与えるには：
+```sh
+ai-text-shaper -p "プロンプトのテキスト" /path/to/inputfile.txt
+```
+
+### プロンプトファイルを使用
+
+プロンプトをファイルから与えるには：
+```sh
+ai-text-shaper -P /path/to/promptfile.txt /path/to/inputfile.txt
+```
+
+### 詳細出力
+
+詳細出力を有効にするには：
+
+```sh
+ai-text-shaper -v /path/to/inputfile.txt
+```
+
+### 出力の抑制
+
+全ての出力を抑制するには：
+
+```sh
+ai-text-shaper -s /path/to/inputfile.txt
+```
+
+### 差分の表示
+
+入力と出力のテキストの差分を表示するには：
+
+```sh
+ai-text-shaper -d /path/to/inputfile.txt
+```
+
+### ファイルへの書き込み
+
+結果を特定の出力ファイルに書き込むには：
+
+```sh
+ai-text-shaper -o /path/to/outputfile.txt /path/to/inputfile.txt
+```
+
+### 入力ファイルの書き換え
+
+入力ファイルを結果で書き換える(rewrite)には：
+
+```sh
+ai-text-shaper -r /path/to/inputfile.txt
+```
+
+### 最初のコードブロックの使用
+
+出力テキストの最初のコードブロックを使用するには：
+
+```sh
+ai-text-shaper -f /path/to/inputfile.txt
+```
+
+### 書き込み前の確認
+
+ファイルに書き込む前に確認するには：
+
+```sh
+ai-text-shaper -c /path/to/inputfile.txt
+```
 
 ## ライセンス
 
-このプロジェクトはMIT Licenseの下でライセンスされています。詳細は[LICENSE](LICENSE)ファイルをご覧ください。
-
-## 謝辞
-
-- GPT-4モデルを提供してくださったOpenAIに感謝します。
-- さまざまなテキスト変換ツールと、柔軟なテキスト形成のニーズがあるコミュニティからインスピレーションを受けました。
+このプロジェクトは[MITライセンス](link_to_license)の下でライセンスされています。
