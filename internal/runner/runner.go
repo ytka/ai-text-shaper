@@ -37,11 +37,11 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 		Shape
 	*/
 	r.verboseLog("[%d] shaping text", index)
-	mergedPromptText, rawResult, resultText, err := process.ShapeText(gai, promptText, inputText, r.config.UseFirstCodeBlock)
+	processedPromptText, rawResult, resultText, err := process.ShapeText(gai, promptText, inputText, r.config.UseFirstCodeBlock)
 	if err != nil {
 		return err
 	}
-	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(mergedPromptText), mergedPromptText)
+	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(processedPromptText), processedPromptText)
 	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(rawResult), rawResult)
 	r.verboseLog("[%d] resultText: '%s'", index, resultText)
 
@@ -85,7 +85,7 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 	if err != nil {
 		return err
 	}
-	r.verboseLog("promptText: %s", promptText)
+	r.verboseLog("promptText: '%s'", promptText)
 
 	/*
 		Process
