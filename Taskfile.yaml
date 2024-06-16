@@ -1,6 +1,15 @@
 version: '3'
 
 tasks:
+  build:
+    desc: Build the project
+    cmds:
+      - go build
+  install:
+    desc: Install dependencies
+    deps: [build]
+    cmds:
+      - cp ./ai-text-shaper ~/bin/
   dl-source:
     curl -L -O https://github.com/ytka/ai-text-shaper/archive/main.zip
   translate-prompts-to-en:
