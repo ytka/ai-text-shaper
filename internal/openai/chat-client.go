@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 )
 
 type APIKey string
@@ -60,8 +59,6 @@ func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
 	for _, choice := range resp.Choices {
 		result += choice.Message.Content
 	}
-	result = strings.TrimSuffix(result, "\n")
-	result = strings.TrimSpace(result)
 	return result, nil
 }
 

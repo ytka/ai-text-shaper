@@ -1,1 +1,1 @@
-次のプログラムのJackson利用箇所をkotlinx.serializationを使うよう変換して。解説は不要です。コメントはそのまま残して結果だけそのまま保存可能なテキスト形式で返して。
+次のプログラムのJackson利用箇所をkotlinx.serializationを使うよう変換して。コメントはそのまま残すこと、@Transientにはデフォルト値を与えること。
