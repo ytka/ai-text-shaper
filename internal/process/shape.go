@@ -1,12 +1,25 @@
-package textshaper
+package process
 
 import (
 	"ai-text-shaper/internal/openai"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
-func ShapeText(apiKey, prompt, input string) (string, error) {
+func findMarkdownFirstCodeBlock(text string) (string, error) {
+	re, err := regexp.Compile("(?s)```[a-zA-Z0-9]*?\n(.*?)\n```")
+	if err != nil {
+		return "", fmt.Errorf("error compiling regex: %w", err)
+	}
+	match := re.FindStringSubmatch(text)
+	if match != nil {
+		return match[1], nil
+	}
+	return "", nil
+}
+
+func ShapeText(apiKey, prompt, input string, useFirstCodeBlock bool) (string, error) {
 	mergedPrmpt := fmt.Sprintf("%s\n\n%s", prompt, input)
 	resp, err := openai.SendChatMessage(apiKey, "gpt-4o", mergedPrmpt)
 	if err != nil {
@@ -30,5 +43,15 @@ func ShapeText(apiKey, prompt, input string) (string, error) {
 
 		return strings.Join(lines, "\n") + "\n", nil
 	*/
-	return result + "\n", nil
+	if useFirstCodeBlock {
+		codeBlock, err := findMarkdownFirstCodeBlock(result)
+		if err != nil {
+			return "", fmt.Errorf("error finding first code block: %w", err)
+		}
+		if codeBlock != "" {
+			result = codeBlock
+		}
+	}
+
+	return strings.TrimSuffix(result, "\n"), nil
 }

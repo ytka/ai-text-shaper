@@ -1,4 +1,4 @@
-package runner
+package process
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func getInputText(inputFilePath string) (string, error) {
+func GetInputText(inputFilePath string) (string, error) {
 	if inputFilePath == "-" {
 		input, err := io.ReadAll(os.Stdin)
 		if err != nil {

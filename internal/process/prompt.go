@@ -1,11 +1,11 @@
-package runner
+package process
 
 import (
 	"fmt"
 	"os"
 )
 
-func getPromptText(prompt, promptPath string) (string, error) {
+func GetPromptText(prompt, promptPath string) (string, error) {
 	if prompt == "" && promptPath == "" {
 		return "", fmt.Errorf("prompt is required")
 	}

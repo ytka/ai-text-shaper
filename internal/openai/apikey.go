@@ -1,4 +1,4 @@
-package runner
+package openai
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 type APIKey string
 
-func getAPIKey() (APIKey, error) {
+func GetAPIKey() (APIKey, error) {
 	apiKeyFilePath := os.Getenv("HOME") + "/.ai-text-shaper-apikey"
 	bytes, err := os.ReadFile(apiKeyFilePath)
 	if err != nil {
