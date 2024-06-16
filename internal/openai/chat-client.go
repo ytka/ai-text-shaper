@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+type APIKey string
+
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`

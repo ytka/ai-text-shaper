@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
+	"strings"
 )
 
 var c runner.Config
@@ -35,17 +36,28 @@ func Execute() {
 	}
 }
 
+func getAPIKey() (openai.APIKey, error) {
+	apiKeyFilePath := os.Getenv("HOME") + "/.ai-text-shaper-apikey"
+	bytes, err := os.ReadFile(apiKeyFilePath)
+	if err != nil {
+		return "", fmt.Errorf("failed to read API key: %w", err)
+	}
+	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
+}
+
+func makeGenerativeAIClient() (process.GenerativeAIClient, error) {
+	apikey, err := getAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get API key: %w", err)
+	}
+	return openai.New(apikey, "gpt-4o"), nil
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "ai-text-shaper",
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return runner.New(&c).Run(args, func() (process.GenerativeAIClient, error) {
-			apikey, err := openai.GetAPIKey()
-			if err != nil {
-				return nil, fmt.Errorf("failed to get API key: %w", err)
-			}
-			return openai.New(apikey, "gpt-4o"), nil
-		})
+		return runner.New(&c).Run(args, makeGenerativeAIClient)
 	},
 }
