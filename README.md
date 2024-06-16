@@ -2,29 +2,29 @@
 
 ## Overview
 
-`ai-text-shaper` is a CLI tool for processing text files such as source code or Markdown using the OpenAI API. It processes the text based on given prompts like "translate to English" or any other custom text. By customizing the prompts, you can use it for various purposes such as code refactoring, translation, or conversion to a specific format. See the files under prompts/ for examples of prompts.
+`ai-text-shaper` is a CLI tool for processing text files such as source code and Markdown using the OpenAI API. How to process the text is specified by giving a prompt, such as "translate to English." By customizing the prompt, the tool can be used for various purposes such as code refactoring, translation, or converting to a specified format. Examples of prompts can be found in the files under the `prompts/` directory.
 
-`ai-text-shaper` processes the given prompt into a format that the OpenAI API's chat API can handle, then submits it and formats the result for standard output. Besides outputting, it can also rewrite the original file, write to a specified path, or allow you to review the output before writing.
+`ai-text-shaper` formats the given prompt to make it easier to process before sending it to OpenAI's chat API, and then formats the result and outputs it to the standard output. Additionally, the tool can rewrite the original file, write to a specified path, or allow you to verify the output before writing.
 
 ## Installation
 
-To install `ai-text-shaper`, download the binary from the following link:
+To install `ai-text-shaper`, download the binaries from the following link:
 
 [https://github.com/ytka/ai-text-shaper/releases](https://github.com/ytka/ai-text-shaper/releases)
 
-## Set the OpenAI API Key
+## Setting the OpenAI API Key
 
-This tool requires an API key to use the OpenAI API. Create a file named `.ai-text-shaper-apikey` in your home directory and write the OpenAI API key in it.
+This tool requires an API key to use the OpenAI API. Create a file named `.ai-text-shaper-apikey` in your home directory and write your OpenAI API key in it.
 
 ## Usage
 
-A common usage pattern for `ai-text-shaper` is as follows:
+The general usage pattern for `ai-text-shaper` is as follows:
 
 ```sh
-ai-text-shaper [options] [input file...]
+ai-text-shaper [options] [input files...]
 ```
 
-You can specify one or multiple input files. If no input file is specified, it reads from standard input.
+You can specify one or more input files. If no input files are specified, it reads from the standard input.
 
 ### Options
 
@@ -34,18 +34,20 @@ You can specify one or multiple input files. If no input file is specified, it r
    - Specify the text for the prompt.
 
 - `-P, --prompt-path string`
-   - Specify the path to a prompt file (text file). The string read from this file is used as the prompt.
+   - Specify the path to a prompt file (text file). The string read from this file will be used as the prompt.
+- `-m, --model string`
+   - Specify the model to use for Chat. The default is `gpt-4`.
 
 #### Output Options
 
 - `-v, --verbose`
-   - Enable verbose output.
+   - Enable detailed output.
 
 - `-s, --silent`
    - Suppress all output.
 
 - `-d, --diff`
-   - Show the difference between the input and output text in addition to the normal output.
+   - In addition to normal output, show the differences between the input and output texts.
 
 #### File Writing Options
 
@@ -56,10 +58,10 @@ You can specify one or multiple input files. If no input file is specified, it r
    - Specify the path to the output file.
 
 - `-f, --use-first-code-block`
-   - Use the first code block in the output text.
+   - If the output text contains code blocks, use the first code block as the output.
 
 - `-c, --confirm`
-   - Ask for confirmation before writing to the file.
+   - Ask for confirmation before writing to a file.
 
 ## Examples
 
@@ -79,15 +81,15 @@ To give a prompt from a file:
 ai-text-shaper -P /path/to/promptfile.txt /path/to/inputfile.txt
 ```
 
-### Verbose Output
+### Enabling Detailed Output
 
-To enable verbose output:
+To enable detailed output:
 
 ```sh
 ai-text-shaper -v /path/to/inputfile.txt
 ```
 
-### Suppress Output
+### Suppressing Output
 
 To suppress all output:
 
@@ -95,15 +97,15 @@ To suppress all output:
 ai-text-shaper -s /path/to/inputfile.txt
 ```
 
-### Show Differences
+### Showing Differences
 
-To show the difference between the input and output text:
+To show the differences between the input and output texts:
 
 ```sh
 ai-text-shaper -d /path/to/inputfile.txt
 ```
 
-### Write to a File
+### Writing to a File
 
 To write the result to a specific output file:
 
@@ -111,7 +113,7 @@ To write the result to a specific output file:
 ai-text-shaper -o /path/to/outputfile.txt /path/to/inputfile.txt
 ```
 
-### Rewrite Input File
+### Rewriting the Input File
 
 To rewrite the input file with the result:
 
@@ -119,17 +121,17 @@ To rewrite the input file with the result:
 ai-text-shaper -r /path/to/inputfile.txt
 ```
 
-### Use First Code Block
+### Using the First Code Block
 
-To use the first code block in the output text:
+To use the first code block of the output text:
 
 ```sh
 ai-text-shaper -f /path/to/inputfile.txt
 ```
 
-### Confirm Before Writing
+### Confirmation Before Writing
 
-To ask for confirmation before writing to the file:
+To ask for confirmation before writing to a file:
 
 ```sh
 ai-text-shaper -c /path/to/inputfile.txt

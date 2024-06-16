@@ -8,7 +8,7 @@
 プロンプトの例は、prompts/以下のファイルを参照してください。
 
 `ai-text-shaper`は与えられたプロンプトを処理しやすい形に加工してから OpenAI APIの chat APIで送信し、結果を整形して標準出力に出力します。
-出力の他にも、元のファイルを書き換える、指定したパスに書き出す、書き換え前に出力結果を確認してから書き出すこともできま。
+出力の他にも、元のファイルを書き換える、指定したパスに書き出す、書き換え前に出力結果を確認してから書き出すこともできます。
 
 ## インストール
 
@@ -16,7 +16,7 @@
 
 [https://github.com/ytka/ai-text-shaper/releases](https://github.com/ytka/ai-text-shaper/releases)
 
-## OpenAI APIキーを設定
+## OpenAI APIのAPIキーを設定
 このツールはOpenAI APIを利用するため APIキーが必要です。
 ホームディレクトリに `.ai-text-shaper-apikey` という名前のファイルを作成し、OpenAI APIキーを書き込んでください。
 
@@ -39,6 +39,8 @@ ai-text-shaper [オプション] [入力ファイル...]
 
 - `-P, --prompt-path string`
    - プロンプトファイル（テキストファイル）のパスを指定します。このファイルから読み取った文字列をプロンプトとして使用します。
+- '-m, --model string'
+   - 使用するChat用モデルを指定します。デフォルトは `gpt-4o` です。
 
 #### 出力オプション
 

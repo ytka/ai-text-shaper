@@ -11,7 +11,12 @@ type GenerativeAIClient interface {
 }
 
 func optimizePrompt(prompt, input string) string {
-	supplementation := "Only the result shall be returned and the ai-text-shaper-input tag shall be removed. The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority."
+	supplements := []string{
+		"The subject of the Instruction is the area enclosed by ai-text-shaper-input tag.",
+		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
+		// "Only the result shall be returned.",
+	}
+	supplementation := strings.Join(supplements, " ")
 	mergedPrmpt := fmt.Sprintf(`<Instruction>%s. (%s)</Instruction>
 <ai-text-shaper-input>%s</ai-text-shaper-input>`, prompt, supplementation, input)
 	return mergedPrmpt
