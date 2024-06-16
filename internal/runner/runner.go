@@ -22,47 +22,24 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
-func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc) error {
-	r.verboseLog("start run")
-	r.verboseLog("configs: %+v", r.config)
-	r.verboseLog("inputFiles: %+v", inputFiles)
-
-	if err := r.config.Validate(); err != nil {
-		return fmt.Errorf("invalid configuration: %+v", r.config)
-	}
-
-	/*
-		Prepare
-	*/
-	r.verboseLog("make generative ai client")
-	gai, err := gaiFactory()
-	if err != nil {
-		return fmt.Errorf("failed to make generative ai client: %w", err)
-	}
-	inputFilePath := "-"
-	if len(inputFiles) >= 1 {
-		inputFilePath = inputFiles[0]
-	}
-	r.verboseLog("get prompt")
-	promptText, err := process.GetPromptText(r.config.Prompt, r.config.PromptPath)
-	if err != nil {
-		return err
-	}
-	r.verboseLog("get input")
+func (r *Runner) runSingleInput(index int, inputFilePath string, promptText string, gai process.GenerativeAIClient) error {
+	r.verboseLog("[%d] get input text from: %s", index, inputFilePath)
 	inputText, err := process.GetInputText(inputFilePath)
 	if err != nil {
 		return err
 	}
+	r.verboseLog("[%d] inputText: '%s'", index, inputText)
 
 	/*
 		Shape
 	*/
-	r.verboseLog("start shaping text")
-	resultText, err := process.ShapeText(gai, promptText, inputText, r.config.UseFirstCodeBlock)
-	r.verboseLog("end shaping text")
+	r.verboseLog("[%d] shaping text", index)
+	mergedPromptText, resultText, err := process.ShapeText(gai, promptText, inputText, r.config.UseFirstCodeBlock)
 	if err != nil {
 		return err
 	}
+	r.verboseLog("[%d] mergedPromptText: '%s'", index, mergedPromptText)
+	r.verboseLog("[%d] resultText: '%s'", index, resultText)
 
 	/*
 		Output
@@ -75,8 +52,48 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 		outpath = inputFilePath
 	}
 	if outpath != "" {
-		r.verboseLog("Writing to file: %s", outpath)
+		r.verboseLog("[%d] Writing to file: %s", index, outpath)
 		return process.WriteResult(resultText, outpath, r.config.ConfirmBeforeWriting)
 	}
+	return nil
+}
+
+func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc) error {
+	r.verboseLog("start run")
+	r.verboseLog("configs: %+v", r.config)
+	r.verboseLog("inputFiles: %+v", inputFiles)
+
+	if err := r.config.Validate(inputFiles); err != nil {
+		return fmt.Errorf("invalid configuration: %+v", r.config)
+	}
+
+	/*
+		Prepare
+	*/
+	r.verboseLog("make generative ai client")
+	gai, err := gaiFactory()
+	if err != nil {
+		return fmt.Errorf("failed to make generative ai client: %w", err)
+	}
+	r.verboseLog("get prompt")
+	promptText, err := process.GetPromptText(r.config.Prompt, r.config.PromptPath)
+	if err != nil {
+		return err
+	}
+	r.verboseLog("promptText: %s", promptText)
+
+	var inputFilePaths []string
+	if len(inputFiles) == 0 {
+		inputFilePaths = []string{"-"}
+	} else {
+		inputFilePaths = inputFiles
+	}
+	for i, inputPath := range inputFilePaths {
+		err := r.runSingleInput(i+1, inputPath, promptText, gai)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }

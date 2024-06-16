@@ -16,12 +16,15 @@ type Config struct {
 	ConfirmBeforeWriting bool
 }
 
-func (c *Config) Validate() error {
+func (c *Config) Validate(inputFiles []string) error {
 	if c.Prompt == "" && c.PromptPath == "" {
 		return fmt.Errorf("either prompt or prompt-path must be provided")
 	}
 	if c.Outpath == "" && c.Rewrite {
 		return fmt.Errorf("either outpath must be provided or rewrite must be true")
+	}
+	if c.Outpath != "" && len(inputFiles) > 1 {
+		return fmt.Errorf("outpath cannot be provided when multiple input files are provided")
 	}
 	return nil
 }

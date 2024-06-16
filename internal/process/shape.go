@@ -10,12 +10,14 @@ type GenerativeAIClient interface {
 	SendChatMessage(prompt string) (string, error)
 }
 
-func ShapeText(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock bool) (string, error) {
-	mergedPrmpt := fmt.Sprintf("%s\n\n%s", prompt, input)
+// Return only the results
+func ShapeText(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock bool) (string, string, error) {
+	mergedPrmpt := fmt.Sprintf(`<Instruction>%s. (Return only the results and remove ai-text-shaper-input tag)</Instruction>
+<ai-text-shaper-input>%s</ai-text-shaper-input>`, prompt, input)
 
 	result, err := gai.SendChatMessage(mergedPrmpt)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	/*
 		lines := strings.Split(result, "\n")
@@ -31,14 +33,14 @@ func ShapeText(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock b
 	if useFirstCodeBlock {
 		codeBlock, err := findMarkdownFirstCodeBlock(result)
 		if err != nil {
-			return "", fmt.Errorf("error finding first code block: %w", err)
+			return "", "", fmt.Errorf("error finding first code block: %w", err)
 		}
 		if codeBlock != "" {
 			result = codeBlock
 		}
 	}
 
-	return strings.TrimSuffix(result, "\n"), nil
+	return mergedPrmpt, strings.TrimSuffix(result, "\n"), nil
 }
 
 func findMarkdownFirstCodeBlock(text string) (string, error) {

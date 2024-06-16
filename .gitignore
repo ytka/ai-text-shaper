@@ -22,5 +22,6 @@
 go.work
 go.work.sum
 
+/tmp
 main.zip
 dist/
