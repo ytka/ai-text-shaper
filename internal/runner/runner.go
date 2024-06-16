@@ -87,6 +87,9 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 	}
 	r.verboseLog("promptText: %s", promptText)
 
+	/*
+		Process
+	*/
 	var inputFilePaths []string
 	if len(inputFiles) == 0 {
 		inputFilePaths = []string{"-"}
