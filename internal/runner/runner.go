@@ -26,6 +26,10 @@ func (r *Runner) Run(inputFiles []string) error {
 	r.verboseLog("configs: %+v", r.config)
 	r.verboseLog("inputFiles: %+v", inputFiles)
 
+	if err := r.config.Validate(); err != nil {
+		return fmt.Errorf("Invalid configuration: %+v", r.config)
+	}
+
 	/*
 		Prepare
 	*/
