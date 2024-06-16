@@ -41,7 +41,6 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 	}
 	inputFilePath := "-"
 	if len(inputFiles) >= 1 {
-		// FIXME: larger case
 		inputFilePath = inputFiles[0]
 	}
 	r.verboseLog("get prompt")
