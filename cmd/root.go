@@ -13,6 +13,7 @@ import (
 var c runner.Config
 
 func init() {
+	rootCmd.Version = "testX"
 	// prompt options
 	rootCmd.Flags().StringVarP(&c.Prompt, "prompt", "p", "", "Prompt text")
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
@@ -32,7 +33,8 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
 }
 
-func Execute() {
+func Execute(version string, commit string, date string, builtBy string) {
+	rootCmd.Version = fmt.Sprintf("%s, commit %s, built at %s, build by %s", version, commit, date, builtBy)
 	if err := rootCmd.Execute(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
