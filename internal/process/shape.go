@@ -10,7 +10,6 @@ type GenerativeAIClient interface {
 	SendChatMessage(prompt string) (string, error)
 }
 
-// Return only the results
 func ShapeText(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock bool) (string, string, error) {
 	mergedPrmpt := fmt.Sprintf(`<Instruction>%s. (Return only the results and remove ai-text-shaper-input tag)</Instruction>
 <ai-text-shaper-input>%s</ai-text-shaper-input>`, prompt, input)

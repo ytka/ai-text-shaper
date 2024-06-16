@@ -23,6 +23,7 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 }
 
 func (r *Runner) runSingleInput(index int, inputFilePath string, promptText string, gai process.GenerativeAIClient) error {
+	r.verboseLog("\n")
 	r.verboseLog("[%d] get input text from: %s", index, inputFilePath)
 	inputText, err := process.GetInputText(inputFilePath)
 	if err != nil {
@@ -64,7 +65,7 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 	r.verboseLog("inputFiles: %+v", inputFiles)
 
 	if err := r.config.Validate(inputFiles); err != nil {
-		return fmt.Errorf("invalid configuration: %+v", r.config)
+		return fmt.Errorf("invalid configuration: %+v, %w", r.config, err)
 	}
 
 	/*
