@@ -1,6 +1,8 @@
 version: '3'
 
 tasks:
+  dl-source:
+    curl -L -O https://github.com/ytka/ai-text-shaper/archive/main.zip
   to-ja:
     desc: Translate the commit message to Japanese
     cmds:
