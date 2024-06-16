@@ -3,20 +3,30 @@ version: '3'
 tasks:
   dl-source:
     curl -L -O https://github.com/ytka/ai-text-shaper/archive/main.zip
-  to-ja:
-    desc: Translate the commit message to Japanese
+  translate-prompts-to-en:
+    desc: Translate the commit message to English
     cmds:
-      - go run main.go -P=prompts/to-ja.txt README.md --outpath README.ja.md
+      - rm -rf prompts/en/
+      - mkdir -p prompts/en
+      - cp -rf prompts/ja/* prompts/en/
+      - |
+        shopt -s globstar
+        for file in prompts/en/**/*.txt; do
+          echo translate: $file
+          go run main.go -p "Translate to English." $file --rewrite
+        done
+  translate-readme-to-ja:
+      - go run main.go -p "Translate to Japanese." README.md --outpath README.ja.md
   commit-msg:
     desc: Generate a commit message
     cmds:
-      - git diff | go run main.go -P=prompts/commit-msg.txt
+      - git diff | go run main.go -P=prompts/en/commit-msg.txt
   auto-commit:
     desc: Commit changes to the repository
     cmds:
       - git add .
-      - git diff --cached | go run main.go -P=prompts/commit-msg.txt | git commit -F -
+      - git diff --cached | go run main.go -P=prompts/en/commit-msg.txt | git commit -F -
   auto-commit-cached:
     desc: Commit changes to the repository
     cmds:
-      - git diff --cached | go run main.go -P=prompts/commit-msg.txt | git commit -F -
+      - git diff --cached | go run main.go -P=prompts/en/commit-msg.txt | git commit -F -

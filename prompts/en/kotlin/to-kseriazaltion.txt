@@ -1,0 +1,1 @@
+Please convert the following program's use of Jackson to use kotlinx.serialization instead. Leave the comments as they are, and give default values to @Transient fields.

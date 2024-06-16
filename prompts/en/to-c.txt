@@ -1,0 +1,1 @@
+Convert the following program to C language. No explanation needed. Just return the results in a directly savable text format.

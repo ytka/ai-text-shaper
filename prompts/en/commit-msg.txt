@@ -1,0 +1,1 @@
+Write a commit message from the Git diff. Output only the body of the commit message. Write it in English.
