@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type Message struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
+
 type Request struct {
 	Model    string    `json:"model"`
 	Messages []Message `json:"messages"`
@@ -34,7 +36,34 @@ type Response struct {
 	} `json:"usage"`
 }
 
-func SendChatMessage(apiKey string, model, prompt string) (*Response, error) {
+type ChatClient struct {
+	apikey APIKey
+	model  string
+}
+
+func New(apikey APIKey, model string) *ChatClient {
+	return &ChatClient{
+		apikey: apikey,
+		model:  model,
+	}
+}
+
+func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
+	resp, err := sendRawChatMessage(c.apikey, c.model, prompt)
+	if err != nil {
+		return "", fmt.Errorf("failed to send chat message: %w", err)
+	}
+
+	var result string
+	for _, choice := range resp.Choices {
+		result += choice.Message.Content
+	}
+	result = strings.TrimSuffix(result, "\n")
+	result = strings.TrimSpace(result)
+	return result, nil
+}
+
+func sendRawChatMessage(apiKey APIKey, model, prompt string) (*Response, error) {
 	requestBody, err := json.Marshal(Request{
 		Model:    model,
 		Messages: []Message{{Role: "user", Content: prompt}},

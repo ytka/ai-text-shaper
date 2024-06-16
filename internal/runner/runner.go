@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"ai-text-shaper/internal/openai"
 	"ai-text-shaper/internal/process"
 	"fmt"
 	"log"
@@ -10,6 +9,8 @@ import (
 type Runner struct {
 	config *Config
 }
+
+type GenerativeAIHandlerFactoryFunc func() (process.GenerativeAIClient, error)
 
 func New(config *Config) *Runner {
 	return &Runner{config: config}
@@ -21,22 +22,22 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
-func (r *Runner) Run(inputFiles []string) error {
+func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc) error {
 	r.verboseLog("start run")
 	r.verboseLog("configs: %+v", r.config)
 	r.verboseLog("inputFiles: %+v", inputFiles)
 
 	if err := r.config.Validate(); err != nil {
-		return fmt.Errorf("Invalid configuration: %+v", r.config)
+		return fmt.Errorf("invalid configuration: %+v", r.config)
 	}
 
 	/*
 		Prepare
 	*/
-	r.verboseLog("get OpenAI API key")
-	apikey, err := openai.GetAPIKey()
+	r.verboseLog("make generative ai client")
+	gai, err := gaiFactory()
 	if err != nil {
-		return fmt.Errorf("failed to get API key: %w", err)
+		return fmt.Errorf("failed to make generative ai client: %w", err)
 	}
 	inputFilePath := "-"
 	if len(inputFiles) >= 1 {
@@ -58,7 +59,7 @@ func (r *Runner) Run(inputFiles []string) error {
 		Shape
 	*/
 	r.verboseLog("start shaping text")
-	resultText, err := process.ShapeText(string(apikey), promptText, inputText, r.config.UseFirstCodeBlock)
+	resultText, err := process.ShapeText(gai, promptText, inputText, r.config.UseFirstCodeBlock)
 	r.verboseLog("end shaping text")
 	if err != nil {
 		return err

@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"ai-text-shaper/internal/openai"
+	"ai-text-shaper/internal/process"
 	"ai-text-shaper/internal/runner"
 	"fmt"
 	"github.com/spf13/cobra"
@@ -38,6 +40,12 @@ var rootCmd = &cobra.Command{
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return runner.New(&c).Run(args)
+		return runner.New(&c).Run(args, func() (process.GenerativeAIClient, error) {
+			apikey, err := openai.GetAPIKey()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get API key: %w", err)
+			}
+			return openai.New(apikey, "gpt-4o"), nil
+		})
 	},
 }
