@@ -23,6 +23,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
 	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
+	rootCmd.Flags().BoolVarP(&c.DebugAPI, "debug-api", "D", false, "Debug API requests")
 
 	// write file options
 	rootCmd.Flags().BoolVarP(&c.Rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
@@ -51,19 +52,18 @@ func getAPIKey() (openai.APIKey, error) {
 	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
 }
 
-func makeGenerativeAIClient(model string) (process.GenerativeAIClient, error) {
-	apikey, err := getAPIKey()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get API key: %w", err)
-	}
-	return openai.New(apikey, model), nil
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "ai-text-shaper",
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return runner.New(&c, tui.Confirm).Run(args, makeGenerativeAIClient)
+		makeGAIFunc := func(model string) (process.GenerativeAIClient, error) {
+			apikey, err := getAPIKey()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get API key: %w", err)
+			}
+			return openai.New(apikey, model, c.DebugAPI), nil
+		}
+		return runner.New(&c, makeGAIFunc, tui.Confirm).Run(args)
 	},
 }

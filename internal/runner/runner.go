@@ -9,14 +9,16 @@ import (
 
 // Runner manages the execution of text processing tasks.
 type Runner struct {
-	config      *Config
-	confirmFunc func(string) (bool, error)
+	config                         *Config
+	generativeAIHandlerFactoryFunc GenerativeAIHandlerFactoryFunc
+	confirmFunc                    ConfirmFUnc
 }
 
 type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
+type ConfirmFUnc func(string) (bool, error)
 
-func New(config *Config, confirmFunc func(msg string) (bool, error)) *Runner {
-	return &Runner{config: config, confirmFunc: confirmFunc}
+func New(config *Config, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFUnc) *Runner {
+	return &Runner{config: config, generativeAIHandlerFactoryFunc: gaiFactory, confirmFunc: confirmFunc}
 }
 
 func (r *Runner) verboseLog(msg string, args ...interface{}) {
@@ -77,7 +79,7 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 }
 
 // Run processing of multiple input files
-func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc) error {
+func (r *Runner) Run(inputFiles []string) error {
 	r.verboseLog("start run")
 	r.verboseLog("configs: %+v", r.config)
 	r.verboseLog("inputFiles: %+v", inputFiles)
@@ -90,7 +92,7 @@ func (r *Runner) Run(inputFiles []string, gaiFactory GenerativeAIHandlerFactoryF
 		Prepare
 	*/
 	r.verboseLog("make generative ai client")
-	gai, err := gaiFactory(r.config.Model)
+	gai, err := r.generativeAIHandlerFactoryFunc(r.config.Model)
 	if err != nil {
 		return fmt.Errorf("failed to make generative ai client: %w", err)
 	}

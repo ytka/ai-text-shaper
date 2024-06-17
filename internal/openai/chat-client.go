@@ -10,25 +10,40 @@ import (
 
 type APIKey string
 
-type Message struct {
+type ChatMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
 
-type Request struct {
-	Model    string    `json:"model"`
-	Messages []Message `json:"messages"`
+// ChatRequest represents the structure of a request to the OpenAI API Chat endpoint
+type ChatRequest struct {
+	Messages       []ChatMessage `json:"messages"`
+	Model          string        `json:"model"`
+	MaxTokens      int           `json:"max_tokens,omitempty"`
+	N              int           `json:"n,omitempty"`
+	ResponseFormat string        `json:"response_format,omitempty"`
+	Temperature    float64       `json:"temperature,omitempty"`
+	Seed           int           `json:"seed,omitempty"`
+
+	TopP             float64            `json:"top_p,omitempty"`
+	Stop             []string           `json:"stop,omitempty"`
+	FrequencyPenalty float64            `json:"frequency_penalty,omitempty"`
+	LogitBias        map[string]float64 `json:"logit_bias,omitempty"`
+	User             string             `json:"user,omitempty"`
+	PresencePenalty  float64            `json:"presence_penalty,omitempty"`
 }
 
-type Response struct {
-	Choices []struct {
-		Index   int `json:"index"`
-		Message struct {
-			Role    string `json:"role"`
-			Content string `json:"content"`
-		} `json:"message"`
-		Logprobs     interface{} `json:"logprobs"`
+type ChatCompletion struct {
+	ID                string `json:"id"`
+	Object            string `json:"object"`
+	Created           int    `json:"created"`
+	Model             string `json:"model"`
+	SystemFingerprint string `json:"system_fingerprint"`
+	Choices           []struct {
 		FinishReason string      `json:"finish_reason"`
+		Index        int         `json:"index"`
+		Message      ChatMessage `json:"message"`
+		// Logprobs     interface{} `json:"logprobs"`
 	} `json:"choices"`
 	Usage struct {
 		PromptTokens     int `json:"prompt_tokens"`
@@ -51,19 +66,21 @@ type ErrorDetail struct {
 }
 
 type ChatClient struct {
-	apikey APIKey
-	model  string
+	apikey          APIKey
+	model           string
+	printAPIMessage bool
 }
 
-func New(apikey APIKey, model string) *ChatClient {
+func New(apikey APIKey, model string, printAPIMessage bool) *ChatClient {
 	return &ChatClient{
-		apikey: apikey,
-		model:  model,
+		apikey:          apikey,
+		model:           model,
+		printAPIMessage: printAPIMessage,
 	}
 }
 
 func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
-	resp, err := sendRawChatMessage(c.apikey, c.model, prompt)
+	resp, err := sendRawChatMessage(c.apikey, c.model, prompt, c.printAPIMessage)
 	if err != nil {
 		return "", fmt.Errorf("failed to send chat message: %w", err)
 	}
@@ -75,13 +92,19 @@ func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
 	return result, nil
 }
 
-func sendRawChatMessage(apiKey APIKey, model, prompt string) (*Response, error) {
-	requestBody, err := json.Marshal(Request{
+func sendRawChatMessage(apiKey APIKey, model, prompt string, printAPIMessage bool) (*ChatCompletion, error) {
+	requestBody, err := json.Marshal(ChatRequest{
 		Model:    model,
-		Messages: []Message{{Role: "user", Content: prompt}},
+		Messages: []ChatMessage{{Role: "user", Content: prompt}},
+		N:        1,
+		Seed:     0,
+		// ResponseFormat
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+	if printAPIMessage {
+		fmt.Printf("requestBody: %s\n", requestBody)
 	}
 
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
@@ -99,6 +122,9 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string) (*Response, error) 
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
+	if printAPIMessage {
+		fmt.Printf("responseBody: %s\n", body)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
@@ -110,9 +136,9 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string) (*Response, error) 
 		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
 	}
 
-	var openAIResponse Response
-	if err := json.Unmarshal(body, &openAIResponse); err != nil {
+	var jsonResponse ChatCompletion
+	if err := json.Unmarshal(body, &jsonResponse); err != nil {
 		return nil, err
 	}
-	return &openAIResponse, nil
+	return &jsonResponse, nil
 }

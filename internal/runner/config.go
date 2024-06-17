@@ -6,9 +6,10 @@ type Config struct {
 	Prompt     string
 	PromptPath string
 
-	Silent  bool
-	Verbose bool
-	Diff    bool
+	Silent   bool
+	Verbose  bool
+	Diff     bool
+	DebugAPI bool
 
 	Rewrite           bool
 	Outpath           string
