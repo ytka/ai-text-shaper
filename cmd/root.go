@@ -4,6 +4,7 @@ import (
 	"ai-text-shaper/internal/openai"
 	"ai-text-shaper/internal/process"
 	"ai-text-shaper/internal/runner"
+	"ai-text-shaper/internal/tui"
 	"fmt"
 	"github.com/spf13/cobra"
 	"os"
@@ -27,7 +28,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&c.Rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
 	rootCmd.Flags().StringVarP(&c.Outpath, "outpath", "o", "", "Output file path")
 	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
-	rootCmd.Flags().BoolVarP(&c.ConfirmBeforeWriting, "confirm", "c", false, "Confirm before writing to file")
+	rootCmd.Flags().BoolVarP(&c.Confirm, "confirm", "c", false, "Confirm before writing to file")
 
 	// model options
 	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
@@ -63,6 +64,6 @@ var rootCmd = &cobra.Command{
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return runner.New(&c).Run(args, makeGenerativeAIClient)
+		return runner.New(&c, tui.Confirm).Run(args, makeGenerativeAIClient)
 	},
 }

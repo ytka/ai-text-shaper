@@ -10,10 +10,10 @@ type Config struct {
 	Verbose bool
 	Diff    bool
 
-	Rewrite              bool
-	Outpath              string
-	UseFirstCodeBlock    bool
-	ConfirmBeforeWriting bool
+	Rewrite           bool
+	Outpath           string
+	UseFirstCodeBlock bool
+	Confirm           bool
 
 	Model string
 }

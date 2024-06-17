@@ -16,6 +16,7 @@ func optimizePrompt(prompt, input string) string {
 		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
 		"Provide additional explanations or details only if explicitly requested in the Instruction.",
 		// "Only the result shall be returned.",
+		// XXX
 	}
 	supplementation := strings.Join(supplements, " ")
 	mergedPrmpt := fmt.Sprintf(`<Instruction>%s. (%s)</Instruction>

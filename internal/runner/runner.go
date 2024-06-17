@@ -4,17 +4,19 @@ import (
 	"ai-text-shaper/internal/process"
 	"fmt"
 	"log"
+	"os"
 )
 
 // Runner manages the execution of text processing tasks.
 type Runner struct {
-	config *Config
+	config      *Config
+	confirmFunc func(string) (bool, error)
 }
 
 type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
 
-func New(config *Config) *Runner {
-	return &Runner{config: config}
+func New(config *Config, confirmFunc func(msg string) (bool, error)) *Runner {
+	return &Runner{config: config, confirmFunc: confirmFunc}
 }
 
 func (r *Runner) verboseLog(msg string, args ...interface{}) {
@@ -55,9 +57,21 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	if r.config.Rewrite {
 		outpath = inputFilePath
 	}
+
+	if r.config.Confirm {
+		r.verboseLog("[%d] Confirming", index)
+		conf, err := r.confirmFunc("Continue (y/N)?: ")
+		if err != nil {
+			return err
+		}
+		r.verboseLog("[%d] Confirmation: %t", index, conf)
+		if !conf {
+			os.Exit(1)
+		}
+	}
 	if outpath != "" {
 		r.verboseLog("[%d] Writing to file: %s", index, outpath)
-		return process.WriteResult(resultText, outpath, r.config.ConfirmBeforeWriting)
+		return process.WriteResult(resultText, outpath)
 	}
 	return nil
 }
