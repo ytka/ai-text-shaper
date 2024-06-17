@@ -41,7 +41,8 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 		Shape
 	*/
 	r.verboseLog("[%d] shaping text", index)
-	processedPromptText, rawResult, resultText, err := process.ShapeText(gai, promptText, inputText, r.config.UseFirstCodeBlock)
+	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock)
+	processedPromptText, rawResult, resultText, err := s.ShapeText(promptText, inputText)
 	if err != nil {
 		return err
 	}

@@ -1,13 +1,43 @@
 package process
 
 import (
+	"ai-text-shaper/internal/openai"
 	"fmt"
 	"regexp"
 	"strings"
 )
 
 type GenerativeAIClient interface {
-	SendChatMessage(prompt string) (string, error)
+	SendChatMessage(prompt string) (*openai.ChatCompletion, error)
+}
+
+type Shaper struct {
+	gai                      GenerativeAIClient
+	maxCompletionRepeatCount int
+	useFirstCodeBlock        bool
+}
+
+func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock bool) *Shaper {
+	return &Shaper{gai: gai, maxCompletionRepeatCount: maxCompletionRepeatCount, useFirstCodeBlock: useFirstCodeBlock}
+}
+
+func (s *Shaper) ShapeText(promptOrg, inputOrg string) (string, string, string, error) {
+	var prompt, rawResult, result string
+	var err error
+
+	if inputOrg == "" {
+		prompt, rawResult, result, err = sendRawPromptAndResponse(s.gai, promptOrg)
+	} else {
+		prompt, rawResult, result, err = sendOptimizedPromptAndResponse(s.gai, promptOrg, inputOrg, s.useFirstCodeBlock)
+	}
+	if err != nil {
+		return "", "", "", err
+	}
+
+	if !strings.HasSuffix(result, "\n") {
+		result += "\n"
+	}
+	return prompt, rawResult, result, nil
 }
 
 func optimizePrompt(prompt, input string) string {
@@ -45,9 +75,22 @@ func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, e
 	return result, nil
 }
 
+func sendChatMessage(gai GenerativeAIClient, prompt string) (string, error) {
+	rawResult, err := gai.SendChatMessage(prompt)
+	if err != nil {
+		return "", fmt.Errorf("failed to send chat message: %w", err)
+	}
+
+	var result string
+	for _, choice := range rawResult.Choices {
+		result += choice.Message.Content
+	}
+	return result, nil
+}
+
 func sendOptimizedPromptAndResponse(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock bool) (string, string, string, error) {
 	optimized := optimizePrompt(prompt, input)
-	rawResult, err := gai.SendChatMessage(optimized)
+	rawResult, err := sendChatMessage(gai, optimized)
 	if err != nil {
 		return "", "", "", err
 	}
@@ -59,30 +102,11 @@ func sendOptimizedPromptAndResponse(gai GenerativeAIClient, prompt, input string
 }
 
 func sendRawPromptAndResponse(gai GenerativeAIClient, prompt string) (string, string, string, error) {
-	rawResult, err := gai.SendChatMessage(prompt)
+	rawResult, err := sendChatMessage(gai, prompt)
 	if err != nil {
 		return "", "", "", err
 	}
 	result := rawResult
-	return prompt, rawResult, result, nil
-}
-
-func ShapeText(gai GenerativeAIClient, promptOrg, inputOrg string, useFirstCodeBlock bool) (string, string, string, error) {
-	var prompt, rawResult, result string
-	var err error
-
-	if inputOrg == "" {
-		prompt, rawResult, result, err = sendRawPromptAndResponse(gai, promptOrg)
-	} else {
-		prompt, rawResult, result, err = sendOptimizedPromptAndResponse(gai, promptOrg, inputOrg, useFirstCodeBlock)
-	}
-	if err != nil {
-		return "", "", "", err
-	}
-
-	if !strings.HasSuffix(result, "\n") {
-		result += "\n"
-	}
 	return prompt, rawResult, result, nil
 }
 
