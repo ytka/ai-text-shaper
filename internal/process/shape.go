@@ -50,15 +50,24 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 }
 
 func (s *Shaper) sendChatMessage(prompt string) (string, error) {
-	rawResult, err := s.gai.SendChatMessage(prompt)
-	if err != nil {
-		return "", fmt.Errorf("failed to send chat message: %w", err)
+	var result string
+
+	for i := 0; i < s.maxCompletionRepeatCount; i++ {
+		comp, err := s.gai.SendChatMessage(prompt)
+		if err != nil {
+			return "", fmt.Errorf("failed to send chat message: %w", err)
+		}
+
+		if comp.Choices == nil || len(comp.Choices) == 0 {
+			break
+		}
+		// use the first choice only
+		result += comp.Choices[0].Message.Content
+		if comp.Choices[0].FinishReason != "length" {
+			break
+		}
 	}
 
-	var result string
-	for _, choice := range rawResult.Choices {
-		result += choice.Message.Content
-	}
 	return result, nil
 }
 
