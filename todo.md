@@ -1,3 +1,2 @@
 - TUIでResponse待ちにSpinnerなどを使う。ただし、Stdoutを邪魔しないようにする
-- JSON形式にするz
 - Finish Reasonがlengthのときの扱い

@@ -15,15 +15,15 @@ type ChatMessage struct {
 	Content string `json:"content"`
 }
 
-// ChatRequest represents the structure of a request to the OpenAI API Chat endpoint
-type ChatRequest struct {
-	Messages       []ChatMessage `json:"messages"`
-	Model          string        `json:"model"`
-	MaxTokens      int           `json:"max_tokens,omitempty"`
-	N              int           `json:"n,omitempty"`
-	ResponseFormat string        `json:"response_format,omitempty"`
-	Temperature    float64       `json:"temperature,omitempty"`
-	Seed           int           `json:"seed,omitempty"`
+// CreateChatCompletion represents the structure of a request to the OpenAI API Chat endpoint.
+type CreateChatCompletion struct {
+	Messages       []ChatMessage   `json:"messages"`
+	Model          string          `json:"model"`
+	MaxTokens      int             `json:"max_tokens,omitempty"`
+	N              int             `json:"n,omitempty"`
+	ResponseFormat *ResponseFormat `json:"response_format"`
+	Temperature    float64         `json:"temperature,omitempty"`
+	Seed           int             `json:"seed,omitempty"`
 
 	TopP             float64            `json:"top_p,omitempty"`
 	Stop             []string           `json:"stop,omitempty"`
@@ -33,12 +33,14 @@ type ChatRequest struct {
 	PresencePenalty  float64            `json:"presence_penalty,omitempty"`
 }
 
+// ChatCompletion represents the JSON structure for the completion response
 type ChatCompletion struct {
-	ID                string `json:"id"`
-	Object            string `json:"object"`
-	Created           int    `json:"created"`
-	Model             string `json:"model"`
-	SystemFingerprint string `json:"system_fingerprint"`
+	ID                string         `json:"id"`
+	Object            string         `json:"object"`
+	Created           int            `json:"created"`
+	Model             string         `json:"model"`
+	ResponseFormat    ResponseFormat `json:"response_format"`
+	SystemFingerprint string         `json:"system_fingerprint"`
 	Choices           []struct {
 		FinishReason string      `json:"finish_reason"`
 		Index        int         `json:"index"`
@@ -50,6 +52,10 @@ type ChatCompletion struct {
 		CompletionTokens int `json:"completion_tokens"`
 		TotalTokens      int `json:"total_tokens"`
 	} `json:"usage"`
+}
+
+type ResponseFormat struct {
+	Type string `json:"type"`
 }
 
 // ErrorResponse represents the JSON structure for the error response
@@ -92,23 +98,38 @@ func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
 	return result, nil
 }
 
-func sendRawChatMessage(apiKey APIKey, model, prompt string, logLevel string) (*ChatCompletion, error) {
-	crq := ChatRequest{
-		Model:    model,
-		Messages: []ChatMessage{{Role: "user", Content: prompt}},
-		N:        1,
-		Seed:     0,
-		// ResponseFormat
+func makeCreateChatCompletion(model, prompt string, responseFormatJSON bool) *CreateChatCompletion {
+	c := &CreateChatCompletion{
+		Model: model,
+		N:     1,
+		Seed:  0,
 	}
+
+	if responseFormatJSON {
+		c.ResponseFormat = &ResponseFormat{Type: "json_object"}
+		c.Messages = []ChatMessage{
+			{Role: "system", Content: "You are a helpful assistant designed to output JSON."},
+			{Role: "user", Content: prompt},
+		}
+	} else {
+		c.Messages = []ChatMessage{
+			{Role: "user", Content: prompt},
+		}
+	}
+	return c
+}
+
+func sendRawChatMessage(apiKey APIKey, model, prompt string, logLevel string) (*ChatCompletion, error) {
+	crq := makeCreateChatCompletion(model, prompt, false)
 	requestBody, err := json.Marshal(crq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 	switch logLevel {
 	case "info":
-		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", model, crq.N, crq.Seed, crq.ResponseFormat)
+		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", crq.Model, crq.N, crq.Seed, crq.ResponseFormat)
 	case "debug":
-		fmt.Printf("requestBody: %s\n", requestBody)
+		fmt.Printf("createChatCompletion: %s\n", requestBody)
 	}
 
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
