@@ -30,7 +30,7 @@ func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCod
 
 func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 	if inputOrg == "" {
-		rawResult, err := s.sendChatMessage(promptOrg)
+		rawResult, err := s.requestCreateChatCompletion(promptOrg)
 		if err != nil {
 			return nil, err
 		}
@@ -39,7 +39,7 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 	}
 
 	optimized := optimizePrompt(promptOrg, inputOrg)
-	rawResult, err := s.sendChatMessage(optimized)
+	rawResult, err := s.requestCreateChatCompletion(optimized)
 	if err != nil {
 		return nil, err
 	}
@@ -50,12 +50,14 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 	return &ShapeResult{Prompt: optimized, RawResult: rawResult, Result: result}, nil
 }
 
-func (s *Shaper) sendChatMessage(prompt string) (string, error) {
+func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 	var result string
+	cr := s.gai.MakeCreateChatCompletion(prompt)
 
-	for i := 0; i < s.maxCompletionRepeatCount; i++ {
-		ccc := s.gai.MakeCreateChatCompletion(prompt)
-		comp, err := s.gai.RequestCreateChatCompletion(ccc)
+	//count := s.maxCompletionRepeatCount
+	maxCount := 1
+	for i := 0; i < maxCount; i++ {
+		comp, err := s.gai.RequestCreateChatCompletion(cr)
 		if err != nil {
 			return "", fmt.Errorf("failed to send chat message: %w", err)
 		}
@@ -64,10 +66,18 @@ func (s *Shaper) sendChatMessage(prompt string) (string, error) {
 			break
 		}
 		// use the first choice only
-		result += comp.Choices[0].Message.Content
-		if comp.Choices[0].FinishReason != "length" {
+		choice := comp.Choices[0]
+		result += choice.Message.Content
+		if choice.FinishReason != "length" {
 			break
 		}
+		/*
+			cr.Messages = append(cr.Messages,
+				openai.ChatMessage{Role: "assistant", Content: choice.Message.Content},
+				// openai.ChatMessage{Role: "system", Content: "Continue from where you left off."},
+			)
+
+		*/
 	}
 
 	return result, nil
