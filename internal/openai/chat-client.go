@@ -66,21 +66,21 @@ type ErrorDetail struct {
 }
 
 type ChatClient struct {
-	apikey          APIKey
-	model           string
-	printAPIMessage bool
+	apikey   APIKey
+	model    string
+	logLevel string
 }
 
-func New(apikey APIKey, model string, printAPIMessage bool) *ChatClient {
+func New(apikey APIKey, model string, logLevel string) *ChatClient {
 	return &ChatClient{
-		apikey:          apikey,
-		model:           model,
-		printAPIMessage: printAPIMessage,
+		apikey:   apikey,
+		model:    model,
+		logLevel: logLevel,
 	}
 }
 
 func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
-	resp, err := sendRawChatMessage(c.apikey, c.model, prompt, c.printAPIMessage)
+	resp, err := sendRawChatMessage(c.apikey, c.model, prompt, c.logLevel)
 	if err != nil {
 		return "", fmt.Errorf("failed to send chat message: %w", err)
 	}
@@ -92,18 +92,22 @@ func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
 	return result, nil
 }
 
-func sendRawChatMessage(apiKey APIKey, model, prompt string, printAPIMessage bool) (*ChatCompletion, error) {
-	requestBody, err := json.Marshal(ChatRequest{
+func sendRawChatMessage(apiKey APIKey, model, prompt string, logLevel string) (*ChatCompletion, error) {
+	crq := ChatRequest{
 		Model:    model,
 		Messages: []ChatMessage{{Role: "user", Content: prompt}},
 		N:        1,
 		Seed:     0,
 		// ResponseFormat
-	})
+	}
+	requestBody, err := json.Marshal(crq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
-	if printAPIMessage {
+	switch logLevel {
+	case "info":
+		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", model, crq.N, crq.Seed, crq.ResponseFormat)
+	case "debug":
 		fmt.Printf("requestBody: %s\n", requestBody)
 	}
 
@@ -122,9 +126,6 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string, printAPIMessage boo
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
-	if printAPIMessage {
-		fmt.Printf("responseBody: %s\n", body)
-	}
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
@@ -136,9 +137,19 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string, printAPIMessage boo
 		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
 	}
 
-	var jsonResponse ChatCompletion
-	if err := json.Unmarshal(body, &jsonResponse); err != nil {
+	var comp ChatCompletion
+	if err := json.Unmarshal(body, &comp); err != nil {
 		return nil, err
 	}
-	return &jsonResponse, nil
+	switch logLevel {
+	case "info":
+		fmt.Printf("ID: %s, Object: %s, Created: %d, Model: %s, SystemFingerprint: %s, ChoicesCount:%d\n",
+			comp.ID, comp.Object, comp.Created, comp.Model, comp.SystemFingerprint, len(comp.Choices))
+		if len(comp.Choices) > 0 {
+			fmt.Printf("[0]FinishReason: %s, Index: %d", comp.Choices[0].FinishReason, comp.Choices[0].Index)
+		}
+	case "debug":
+		fmt.Printf("responseBody: %s\n", body)
+	}
+	return &comp, nil
 }

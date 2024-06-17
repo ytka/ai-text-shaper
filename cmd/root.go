@@ -23,7 +23,9 @@ func init() {
 	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
 	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
-	rootCmd.Flags().BoolVarP(&c.DebugAPI, "debug-api", "D", false, "Debug API requests")
+
+	// debug options
+	rootCmd.Flags().StringVarP(&c.LogAPILevel, "log-api-level", "l", "info", "API log level: info, debug")
 
 	// write file options
 	rootCmd.Flags().BoolVarP(&c.Rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
@@ -62,7 +64,7 @@ var rootCmd = &cobra.Command{
 			if err != nil {
 				return nil, fmt.Errorf("failed to get API key: %w", err)
 			}
-			return openai.New(apikey, model, c.DebugAPI), nil
+			return openai.New(apikey, model, c.LogAPILevel), nil
 		}
 		return runner.New(&c, makeGAIFunc, tui.Confirm).Run(args)
 	},
