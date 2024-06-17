@@ -71,12 +71,12 @@ func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 		if choice.FinishReason != "length" {
 			break
 		}
+		// can not continue exceed response size limit
 		/*
 			cr.Messages = append(cr.Messages,
 				openai.ChatMessage{Role: "assistant", Content: choice.Message.Content},
 				// openai.ChatMessage{Role: "system", Content: "Continue from where you left off."},
 			)
-
 		*/
 	}
 

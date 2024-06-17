@@ -1,2 +1,3 @@
 - TUIでResponse待ちにSpinnerなどを使う。ただし、Stdoutを邪魔しないようにする
 - Finish Reasonがlengthのときの扱い
+- 結果を patchで受け取るようにする
