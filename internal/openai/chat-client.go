@@ -19,18 +19,18 @@ type ChatMessage struct {
 type CreateChatCompletion struct {
 	Messages       []ChatMessage   `json:"messages"`
 	Model          string          `json:"model"`
-	MaxTokens      int             `json:"max_tokens,omitempty"`
-	N              int             `json:"n,omitempty"`
-	ResponseFormat *ResponseFormat `json:"response_format"`
-	Temperature    float64         `json:"temperature,omitempty"`
-	Seed           int             `json:"seed,omitempty"`
+	ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
+	MaxTokens      *int            `json:"max_tokens,omitempty"`
+	N              *int            `json:"n,omitempty"`
+	Temperature    *float64        `json:"temperature,omitempty"`
+	Seed           *int            `json:"seed,omitempty"`
 
-	TopP             float64            `json:"top_p,omitempty"`
+	TopP             *float64           `json:"top_p,omitempty"`
 	Stop             []string           `json:"stop,omitempty"`
-	FrequencyPenalty float64            `json:"frequency_penalty,omitempty"`
+	FrequencyPenalty *float64           `json:"frequency_penalty,omitempty"`
 	LogitBias        map[string]float64 `json:"logit_bias,omitempty"`
-	User             string             `json:"user,omitempty"`
-	PresencePenalty  float64            `json:"presence_penalty,omitempty"`
+	User             *string            `json:"user,omitempty"`
+	PresencePenalty  *float64           `json:"presence_penalty,omitempty"`
 }
 
 // ChatCompletion represents the JSON structure for the completion response
@@ -99,10 +99,12 @@ func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
 }
 
 func makeCreateChatCompletion(model, prompt string, responseFormatJSON bool) *CreateChatCompletion {
+	n := 1
+	seed := 0
 	c := &CreateChatCompletion{
 		Model: model,
-		N:     1,
-		Seed:  0,
+		N:     &n,
+		Seed:  &seed,
 	}
 
 	if responseFormatJSON {
