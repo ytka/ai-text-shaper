@@ -8,7 +8,8 @@ import (
 )
 
 type GenerativeAIClient interface {
-	SendChatMessage(prompt string) (*openai.ChatCompletion, error)
+	RequestCreateChatCompletion(*openai.CreateChatCompletion) (*openai.ChatCompletion, error)
+	MakeCreateChatCompletion(prompt string) *openai.CreateChatCompletion
 }
 
 type ShapeResult struct {
@@ -53,7 +54,8 @@ func (s *Shaper) sendChatMessage(prompt string) (string, error) {
 	var result string
 
 	for i := 0; i < s.maxCompletionRepeatCount; i++ {
-		comp, err := s.gai.SendChatMessage(prompt)
+		ccc := s.gai.MakeCreateChatCompletion(prompt)
+		comp, err := s.gai.RequestCreateChatCompletion(ccc)
 		if err != nil {
 			return "", fmt.Errorf("failed to send chat message: %w", err)
 		}

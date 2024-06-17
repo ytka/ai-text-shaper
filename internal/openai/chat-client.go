@@ -24,41 +24,18 @@ func New(apikey APIKey, model string, logLevel string, maxTokens *int) *ChatClie
 	}
 }
 
-func (c *ChatClient) makeCreateChatCompletion(prompt string, responseFormatJSON bool) *CreateChatCompletion {
-	n := 1
-	seed := 0
-	cr := &CreateChatCompletion{
-		Model: c.model,
-		N:     &n,
-		Seed:  &seed,
-	}
-	if c.maxTokens != nil {
-		cr.MaxTokens = c.maxTokens
-	}
-
-	if responseFormatJSON {
-		cr.ResponseFormat = &ResponseFormat{Type: "json_object"}
-		cr.Messages = []ChatMessage{
-			{Role: "system", Content: "You are a helpful assistant designed to output JSON."},
-			{Role: "user", Content: prompt},
-		}
-	} else {
-		cr.Messages = []ChatMessage{
-			{Role: "user", Content: prompt},
-		}
-	}
-	return cr
+func (c *ChatClient) MakeCreateChatCompletion(prompt string) *CreateChatCompletion {
+	return newCreateChatCompletion(c.model, prompt, c.maxTokens, false)
 }
 
-func (c *ChatClient) SendChatMessage(prompt string) (*ChatCompletion, error) {
-	crq := c.makeCreateChatCompletion(prompt, false)
-	requestBody, err := json.Marshal(crq)
+func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*ChatCompletion, error) {
+	requestBody, err := json.Marshal(ccc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 	switch c.logLevel {
 	case "info":
-		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", crq.Model, crq.N, crq.Seed, crq.ResponseFormat)
+		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", ccc.Model, ccc.N, ccc.Seed, ccc.ResponseFormat)
 	case "debug":
 		fmt.Printf("createChatCompletion: %s\n", requestBody)
 	}

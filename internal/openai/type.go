@@ -62,3 +62,26 @@ type ErrorDetail struct {
 	Param   interface{} `json:"param"` // Param can be of any type, hence using interface{}
 	Code    string      `json:"code"`
 }
+
+func newCreateChatCompletion(model, prompt string, maxTokens *int, responseFormatJSON bool) *CreateChatCompletion {
+	n := 1
+	seed := 0
+	cr := &CreateChatCompletion{
+		Model:     model,
+		N:         &n,
+		Seed:      &seed,
+		MaxTokens: maxTokens,
+	}
+	if responseFormatJSON {
+		cr.ResponseFormat = &ResponseFormat{Type: "json_object"}
+		cr.Messages = []ChatMessage{
+			{Role: "system", Content: "You are a helpful assistant designed to output JSON."},
+			{Role: "user", Content: prompt},
+		}
+	} else {
+		cr.Messages = []ChatMessage{
+			{Role: "user", Content: prompt},
+		}
+	}
+	return cr
+}
