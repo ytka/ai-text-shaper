@@ -11,6 +11,12 @@ type GenerativeAIClient interface {
 	SendChatMessage(prompt string) (*openai.ChatCompletion, error)
 }
 
+type ShapeResult struct {
+	Prompt    string
+	RawResult string
+	Result    string
+}
+
 type Shaper struct {
 	gai                      GenerativeAIClient
 	maxCompletionRepeatCount int
@@ -21,23 +27,39 @@ func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCod
 	return &Shaper{gai: gai, maxCompletionRepeatCount: maxCompletionRepeatCount, useFirstCodeBlock: useFirstCodeBlock}
 }
 
-func (s *Shaper) ShapeText(promptOrg, inputOrg string) (string, string, string, error) {
-	var prompt, rawResult, result string
-	var err error
-
+func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 	if inputOrg == "" {
-		prompt, rawResult, result, err = sendRawPromptAndResponse(s.gai, promptOrg)
-	} else {
-		prompt, rawResult, result, err = sendOptimizedPromptAndResponse(s.gai, promptOrg, inputOrg, s.useFirstCodeBlock)
-	}
-	if err != nil {
-		return "", "", "", err
+		rawResult, err := s.sendChatMessage(promptOrg)
+		if err != nil {
+			return nil, err
+		}
+		result := rawResult
+		return &ShapeResult{Prompt: promptOrg, RawResult: rawResult, Result: result}, nil
 	}
 
-	if !strings.HasSuffix(result, "\n") {
-		result += "\n"
+	optimized := optimizePrompt(promptOrg, inputOrg)
+	rawResult, err := s.sendChatMessage(optimized)
+	if err != nil {
+		return nil, err
 	}
-	return prompt, rawResult, result, nil
+	result, err := optimizeResponseResult(rawResult, s.useFirstCodeBlock)
+	if err != nil {
+		return nil, err
+	}
+	return &ShapeResult{Prompt: optimized, RawResult: rawResult, Result: result}, nil
+}
+
+func (s *Shaper) sendChatMessage(prompt string) (string, error) {
+	rawResult, err := s.gai.SendChatMessage(prompt)
+	if err != nil {
+		return "", fmt.Errorf("failed to send chat message: %w", err)
+	}
+
+	var result string
+	for _, choice := range rawResult.Choices {
+		result += choice.Message.Content
+	}
+	return result, nil
 }
 
 func optimizePrompt(prompt, input string) string {
@@ -73,41 +95,6 @@ func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, e
 		}
 	}
 	return result, nil
-}
-
-func sendChatMessage(gai GenerativeAIClient, prompt string) (string, error) {
-	rawResult, err := gai.SendChatMessage(prompt)
-	if err != nil {
-		return "", fmt.Errorf("failed to send chat message: %w", err)
-	}
-
-	var result string
-	for _, choice := range rawResult.Choices {
-		result += choice.Message.Content
-	}
-	return result, nil
-}
-
-func sendOptimizedPromptAndResponse(gai GenerativeAIClient, prompt, input string, useFirstCodeBlock bool) (string, string, string, error) {
-	optimized := optimizePrompt(prompt, input)
-	rawResult, err := sendChatMessage(gai, optimized)
-	if err != nil {
-		return "", "", "", err
-	}
-	result, err := optimizeResponseResult(rawResult, useFirstCodeBlock)
-	if err != nil {
-		return "", "", "", err
-	}
-	return optimized, rawResult, result, nil
-}
-
-func sendRawPromptAndResponse(gai GenerativeAIClient, prompt string) (string, string, string, error) {
-	rawResult, err := sendChatMessage(gai, prompt)
-	if err != nil {
-		return "", "", "", err
-	}
-	result := rawResult
-	return prompt, rawResult, result, nil
 }
 
 func findMarkdownFirstCodeBlock(text string) (string, error) {

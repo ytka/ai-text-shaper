@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 // Runner manages the execution of text processing tasks.
@@ -42,9 +43,13 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	*/
 	r.verboseLog("[%d] shaping text", index)
 	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock)
-	processedPromptText, rawResult, resultText, err := s.ShapeText(promptText, inputText)
+	result, err := s.ShapeText(promptText, inputText)
 	if err != nil {
 		return err
+	}
+	processedPromptText, rawResult, resultText := result.Prompt, result.RawResult, result.Result
+	if !strings.HasSuffix(resultText, "\n") {
+		resultText += "\n"
 	}
 	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(processedPromptText), processedPromptText)
 	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(rawResult), rawResult)
