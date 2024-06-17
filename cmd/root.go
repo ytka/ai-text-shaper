@@ -19,6 +19,11 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.Prompt, "prompt", "p", "", "Prompt text")
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
 
+	// model options
+	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
+	rootCmd.Flags().IntVarP(&c.MaxTokens, "max-tokens", "t", 0, "Max tokens to generate")
+	rootCmd.Flags().IntVar(&c.MaxCompletionRepeatCount, "max-completion-repeat-count", 1, "Max completion repeat count")
+
 	// stdout messages options
 	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
@@ -33,8 +38,6 @@ func init() {
 	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
 	rootCmd.Flags().BoolVarP(&c.Confirm, "confirm", "c", false, "Confirm before writing to file")
 
-	// model options
-	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
 }
 
 func Execute(version string, commit string, date string, builtBy string) {
@@ -64,7 +67,11 @@ var rootCmd = &cobra.Command{
 			if err != nil {
 				return nil, fmt.Errorf("failed to get API key: %w", err)
 			}
-			return openai.New(apikey, model, c.LogAPILevel), nil
+			var maxTokens *int
+			if c.MaxTokens > 0 {
+				maxTokens = &c.MaxTokens
+			}
+			return openai.New(apikey, model, c.LogAPILevel, maxTokens), nil
 		}
 		return runner.New(&c, makeGAIFunc, tui.Confirm).Run(args)
 	},

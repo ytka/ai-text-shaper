@@ -72,21 +72,24 @@ type ErrorDetail struct {
 }
 
 type ChatClient struct {
-	apikey   APIKey
-	model    string
-	logLevel string
+	apikey    APIKey
+	model     string
+	logLevel  string
+	maxTokens *int
+	//MaxCompletionRepeatCount int
 }
 
-func New(apikey APIKey, model string, logLevel string) *ChatClient {
+func New(apikey APIKey, model string, logLevel string, maxTokens *int) *ChatClient {
 	return &ChatClient{
-		apikey:   apikey,
-		model:    model,
-		logLevel: logLevel,
+		apikey:    apikey,
+		model:     model,
+		logLevel:  logLevel,
+		maxTokens: maxTokens,
 	}
 }
 
 func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
-	resp, err := sendRawChatMessage(c.apikey, c.model, prompt, c.logLevel)
+	resp, err := c.sendRawChatMessage(prompt)
 	if err != nil {
 		return "", fmt.Errorf("failed to send chat message: %w", err)
 	}
@@ -98,36 +101,39 @@ func (c *ChatClient) SendChatMessage(prompt string) (string, error) {
 	return result, nil
 }
 
-func makeCreateChatCompletion(model, prompt string, responseFormatJSON bool) *CreateChatCompletion {
+func (c *ChatClient) makeCreateChatCompletion(prompt string, responseFormatJSON bool) *CreateChatCompletion {
 	n := 1
 	seed := 0
-	c := &CreateChatCompletion{
-		Model: model,
+	cr := &CreateChatCompletion{
+		Model: c.model,
 		N:     &n,
 		Seed:  &seed,
 	}
+	if c.maxTokens != nil {
+		cr.MaxTokens = c.maxTokens
+	}
 
 	if responseFormatJSON {
-		c.ResponseFormat = &ResponseFormat{Type: "json_object"}
-		c.Messages = []ChatMessage{
+		cr.ResponseFormat = &ResponseFormat{Type: "json_object"}
+		cr.Messages = []ChatMessage{
 			{Role: "system", Content: "You are a helpful assistant designed to output JSON."},
 			{Role: "user", Content: prompt},
 		}
 	} else {
-		c.Messages = []ChatMessage{
+		cr.Messages = []ChatMessage{
 			{Role: "user", Content: prompt},
 		}
 	}
-	return c
+	return cr
 }
 
-func sendRawChatMessage(apiKey APIKey, model, prompt string, logLevel string) (*ChatCompletion, error) {
-	crq := makeCreateChatCompletion(model, prompt, false)
+func (c *ChatClient) sendRawChatMessage(prompt string) (*ChatCompletion, error) {
+	crq := c.makeCreateChatCompletion(prompt, false)
 	requestBody, err := json.Marshal(crq)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
-	switch logLevel {
+	switch c.logLevel {
 	case "info":
 		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", crq.Model, crq.N, crq.Seed, crq.ResponseFormat)
 	case "debug":
@@ -139,7 +145,7 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string, logLevel string) (*
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apikey))
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -164,7 +170,7 @@ func sendRawChatMessage(apiKey APIKey, model, prompt string, logLevel string) (*
 	if err := json.Unmarshal(body, &comp); err != nil {
 		return nil, err
 	}
-	switch logLevel {
+	switch c.logLevel {
 	case "info":
 		fmt.Printf("ID: %s, Object: %s, Created: %d, Model: %s, SystemFingerprint: %s, ChoicesCount:%d\n",
 			comp.ID, comp.Object, comp.Created, comp.Model, comp.SystemFingerprint, len(comp.Choices))

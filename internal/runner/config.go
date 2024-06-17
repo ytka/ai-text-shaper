@@ -6,6 +6,10 @@ type Config struct {
 	Prompt     string
 	PromptPath string
 
+	Model                    string
+	MaxTokens                int
+	MaxCompletionRepeatCount int
+
 	Silent  bool
 	Verbose bool
 	Diff    bool
@@ -16,8 +20,6 @@ type Config struct {
 	Outpath           string
 	UseFirstCodeBlock bool
 	Confirm           bool
-
-	Model string
 }
 
 func (c *Config) Validate(inputFiles []string) error {
