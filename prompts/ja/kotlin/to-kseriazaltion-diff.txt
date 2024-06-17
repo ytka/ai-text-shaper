@@ -1,0 +1,1 @@
+次のプログラムのJackson利用箇所をkotlinx.serializationを使うよう変換しオリジナルとのUNIX diffを返して。コメントはそのまま残すこと、@Transientにはデフォルト値を与えること。
