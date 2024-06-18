@@ -8,14 +8,24 @@ import (
 	"strings"
 )
 
-type model struct {
+func Confirm(message string) (bool, error) {
+	m := newConfirmModel(message)
+
+	fM, err := tea.NewProgram(m).Run()
+	if err != nil {
+		return false, err
+	}
+	return fM.(confirmModel).confirmed, nil
+}
+
+type confirmModel struct {
 	userInput textinput.Model
 	confirmed bool
 }
 
-func newModel(initialValue string) (m model) {
+func newConfirmModel(initialPrompt string) (m confirmModel) {
 	i := textinput.New()
-	i.Prompt = initialValue
+	i.Prompt = initialPrompt
 	i.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("63"))
 	i.CursorEnd()
 	i.Focus()
@@ -23,11 +33,11 @@ func newModel(initialValue string) (m model) {
 	return
 }
 
-func (m model) Init() tea.Cmd {
+func (m confirmModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if key, ok := msg.(tea.KeyMsg); ok {
 		switch key.Type {
 		case tea.KeyCtrlC, tea.KeyEscape:
@@ -54,16 +64,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m confirmModel) View() string {
 	return fmt.Sprintf("\n%s", m.userInput.View())
-}
-
-func Confirm(message string) (bool, error) {
-	m := newModel(message)
-
-	fM, err := tea.NewProgram(m).Run()
-	if err != nil {
-		return false, err
-	}
-	return fM.(model).confirmed, nil
 }

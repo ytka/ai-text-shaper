@@ -13,13 +13,14 @@ type Runner struct {
 	config                         *Config
 	generativeAIHandlerFactoryFunc GenerativeAIHandlerFactoryFunc
 	confirmFunc                    ConfirmFUnc
+	onChangeStatusFunc             func(string)
 }
 
 type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
 type ConfirmFUnc func(string) (bool, error)
 
-func New(config *Config, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFUnc) *Runner {
-	return &Runner{config: config, generativeAIHandlerFactoryFunc: gaiFactory, confirmFunc: confirmFunc}
+func New(config *Config, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFUnc, onChangeStatusFunc func(string)) *Runner {
+	return &Runner{config: config, generativeAIHandlerFactoryFunc: gaiFactory, confirmFunc: confirmFunc, onChangeStatusFunc: onChangeStatusFunc}
 }
 
 func (r *Runner) verboseLog(msg string, args ...interface{}) {
@@ -41,6 +42,7 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	/*
 		Shape
 	*/
+	r.onChangeStatus("Shaping...")
 	r.verboseLog("[%d] shaping text", index)
 	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock)
 	result, err := s.ShapeText(promptText, inputText)
@@ -54,6 +56,7 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(processedPromptText), processedPromptText)
 	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(rawResult), rawResult)
 	r.verboseLog("[%d] resultText: '%s'", index, resultText)
+	r.onChangeStatus("")
 
 	/*
 		Output
@@ -84,9 +87,14 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	return nil
 }
 
+func (r *Runner) onChangeStatus(status string) {
+	r.verboseLog("status: %s", status)
+	r.onChangeStatusFunc(status)
+}
+
 // Run processing of multiple input files
 func (r *Runner) Run(inputFiles []string) error {
-	r.verboseLog("start run")
+	r.onChangeStatus("Initializing...")
 	r.verboseLog("configs: %+v", r.config)
 	r.verboseLog("inputFiles: %+v", inputFiles)
 

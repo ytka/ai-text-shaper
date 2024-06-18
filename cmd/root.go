@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"os"
 	"strings"
+	"sync"
 )
 
 var c runner.Config
@@ -20,7 +21,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
 
 	// model options
-	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
+	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "statusModel to use for text generation")
 	rootCmd.Flags().IntVarP(&c.MaxTokens, "max-tokens", "t", 0, "Max tokens to generate")
 	rootCmd.Flags().IntVar(&c.MaxCompletionRepeatCount, "max-completion-repeat-count", 1, "Max completion repeat count")
 
@@ -73,6 +74,51 @@ var rootCmd = &cobra.Command{
 			}
 			return openai.New(apikey, model, c.LogAPILevel, maxTokens), nil
 		}
-		return runner.New(&c, makeGAIFunc, tui.Confirm).Run(args)
+
+		return doRun(args, makeGAIFunc)
+		//		return doRunWithStatus(args, makeGAIFunc)
 	},
+}
+
+func doRun(args []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
+	onChangeStatus := func(status string) {
+		// fmt.Println(status)
+	}
+
+	return runner.New(&c, makeGAIFunc, tui.Confirm, onChangeStatus).
+		Run(args)
+}
+
+func doRunWithStatus(args []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
+	statusUI := tui.NewStatusUI("ai-text-shaper")
+	onChangeStatus := func(status string) {
+		if status == "" {
+			statusUI.Quit()
+			return
+		}
+		statusUI.UpdateStatusText(status)
+	}
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, 1)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		runner := runner.New(&c, makeGAIFunc, tui.Confirm, onChangeStatus)
+		if err := runner.Run(args); err != nil {
+			errChan <- err
+		}
+		statusUI.Quit()
+	}()
+
+	if err := statusUI.Run(); err != nil {
+		return err
+	}
+	wg.Wait()
+	select {
+	case runnerErr := <-errChan:
+		return runnerErr
+	default:
+		return nil
+	}
 }

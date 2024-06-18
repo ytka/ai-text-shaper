@@ -7,54 +7,66 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type updateSpinnerMsg string
-type runMsg string
+type updateStatusMsg string
+type quiteMsg struct{}
 
-type Model struct {
+type StatusUI struct {
+	program *tea.Program
+	model   statusModel
+}
+
+func NewStatusUI(initialMessage string) *StatusUI {
+	model := newStatusModel(initialMessage)
+	return &StatusUI{program: tea.NewProgram(model), model: model}
+}
+
+func (s *StatusUI) Run() error {
+	_, err := s.program.Run()
+	return err
+}
+
+func (s *StatusUI) Quit() {
+	s.program.Send(quiteMsg{})
+}
+
+func (s *StatusUI) UpdateStatusText(statusText string) {
+	s.program.Send(updateStatusMsg(statusText))
+}
+
+type statusModel struct {
 	spinner    spinner.Model
 	statusText string
 	quitting   bool
 	err        error
-	runner     func(m Model) tea.Cmd
 }
 
-func New(text string, runner func(m Model) tea.Cmd) Model {
+func newStatusModel(text string) statusModel {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	return Model{
+	return statusModel{
 		statusText: text,
 		spinner:    s,
-		runner:     runner,
 	}
 }
 
-func makeRunMsg() tea.Cmd {
-	return func() tea.Msg {
-		return runMsg("running")
-	}
+func (m statusModel) Init() tea.Cmd {
+	return m.spinner.Tick
 }
 
-func (m Model) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, makeRunMsg())
-}
-
-func (m Model) UpdateMsg(msg string) tea.Msg {
-	return updateSpinnerMsg(msg)
-}
-
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case quiteMsg:
+		m.spinner.Update(tea.Quit())
+		m.quitting = true
+		return m, tea.Quit
+	case updateStatusMsg:
+		m.statusText = string(msg)
+		return m, nil
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
-	case runMsg:
-		m.spinner, _ = m.spinner.Update(tea.Quit)
-		return m, m.runner(m)
-	case updateSpinnerMsg:
-		m.statusText = string(msg)
-		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
@@ -75,13 +87,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m Model) View() string {
+func (m statusModel) View() string {
 	if m.err != nil {
 		return m.err.Error()
 	}
 	str := fmt.Sprintf("\n\n%s %s\n\n", m.spinner.View(), m.statusText)
 	if m.quitting {
-		return str + "\n"
+		// Move the cursor to the start of the line and clear the line
+		return "\033[H\033[2J"
+
 	}
 	return str
 }
