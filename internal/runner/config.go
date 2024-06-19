@@ -14,6 +14,8 @@ type Config struct {
 	Verbose bool
 	Diff    bool
 
+	InputFileList string
+
 	LogAPILevel string
 
 	Rewrite           bool

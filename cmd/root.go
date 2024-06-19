@@ -30,6 +30,9 @@ func init() {
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
 	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
 
+	// input file options
+	rootCmd.Flags().StringVarP(&c.InputFileList, "input-file-list", "i", "", "Input file list")
+
 	// debug options
 	rootCmd.Flags().StringVarP(&c.LogAPILevel, "log-api-level", "l", "", "API log level: info, debug")
 
@@ -58,25 +61,51 @@ func getAPIKey() (openai.APIKey, error) {
 	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
 }
 
+func makeGAIFunc(model string) (process.GenerativeAIClient, error) {
+	apikey, err := getAPIKey()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get API key: %w", err)
+	}
+	var maxTokens *int
+	if c.MaxTokens > 0 {
+		maxTokens = &c.MaxTokens
+	}
+	return openai.New(apikey, model, c.LogAPILevel, maxTokens), nil
+}
+
+func readInputFiles(fileName string) ([]string, error) {
+	data, err := os.ReadFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+
+	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
+	files := make([]string, 0, len(lines))
+	for _, line := range lines {
+		line := strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		files = append(files, line)
+	}
+	return files, nil
+}
+
 var rootCmd = &cobra.Command{
 	Use:   "ai-text-shaper",
 	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		makeGAIFunc := func(model string) (process.GenerativeAIClient, error) {
-			apikey, err := getAPIKey()
+		inputFiles := args
+		if c.InputFileList != "" {
+			files, err := readInputFiles(c.InputFileList)
 			if err != nil {
-				return nil, fmt.Errorf("failed to get API key: %w", err)
+				return err
 			}
-			var maxTokens *int
-			if c.MaxTokens > 0 {
-				maxTokens = &c.MaxTokens
-			}
-			return openai.New(apikey, model, c.LogAPILevel, maxTokens), nil
+			inputFiles = files
 		}
-
-		return doRun(args, makeGAIFunc)
-		//		return doRunWithStatus(args, makeGAIFunc)
+		return doRun(inputFiles, makeGAIFunc)
+		//		return doRunWithStatus(inputFiles, makeGAIFunc)
 	},
 }
 
@@ -104,8 +133,8 @@ func doRunWithStatus(args []string, makeGAIFunc func(model string) (process.Gene
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		runner := runner.New(&c, makeGAIFunc, tui.Confirm, onChangeStatus)
-		if err := runner.Run(args); err != nil {
+		r := runner.New(&c, makeGAIFunc, tui.Confirm, onChangeStatus)
+		if err := r.Run(args); err != nil {
 			errChan <- err
 		}
 		statusUI.Quit()
