@@ -136,11 +136,9 @@ func (r *Runner) Setup() (*RunOption, error) {
 // Run processing of multiple input files
 func (r *Runner) Run(opt *RunOption) error {
 	for i, inputPath := range opt.inputFilePaths {
-		err := r.runSingleInput(i+1, inputPath, opt.promptText, opt.gaiClient)
-		if err != nil {
+		if err := r.runSingleInput(i+1, inputPath, opt.promptText, opt.gaiClient); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
