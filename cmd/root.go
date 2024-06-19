@@ -10,7 +10,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 )
 
 var c runner.Config
@@ -111,11 +110,24 @@ var rootCmd = &cobra.Command{
 }
 
 func doRun(inputFiles []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
+	statusUI := tui.NewStatusUI("ai-text-shaper")
+
+	var wg sync.WaitGroup
+	errChan := make(chan error, 1)
+	wg.Add(1)
+
 	onBeforeProcessing := func() {
-		// fmt.Println(status)
+		go func() {
+			defer wg.Done()
+			if err := statusUI.Run(); err != nil {
+				errChan <- err
+			}
+		}()
+		statusUI.UpdateStatusText("Processing...")
 	}
 	onAfterProcessing := func() {
-		// fmt.Println(status)
+		statusUI.Quit()
+		wg.Wait()
 	}
 
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
@@ -124,55 +136,4 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 		return err
 	}
 	return r.Run(ropt, onBeforeProcessing, onAfterProcessing)
-}
-
-func doRunWithStatus(args []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
-	statusUI := tui.NewStatusUI("ai-text-shaper")
-
-	var wg sync.WaitGroup
-	errChan := make(chan error, 1)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := statusUI.Run(); err != nil {
-			errChan <- err
-		}
-	}()
-
-	statusUI.UpdateStatusText("start msg")
-	onChangeStatus := func(status string) {
-		statusUI.UpdateStatusText(status)
-	}
-
-	time.Sleep(1 * time.Second)
-	onChangeStatus("after 1")
-	time.Sleep(1 * time.Second)
-	//time.Sleep(1 * time.Second)
-
-	/*
-		r := runner.New(&c, makeGAIFunc, tui.Confirm, onChangeStatus)
-		if err := r.Run(args); err != nil {
-			return err
-		}
-	*/
-
-	statusUI.Quit()
-	fmt.Println("hoge fuga")
-	fmt.Println("dfafad")
-	wg.Wait()
-
-	return nil
-
-	/*
-		statusUI.Quit()
-
-		wg.Wait()
-		select {
-		case runnerErr := <-errChan:
-			return runnerErr
-		default:
-			return nil
-		}
-
-	*/
 }

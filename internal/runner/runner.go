@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 )
 
 // Runner manages the execution of text processing tasks.
@@ -33,16 +32,12 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
-// runSingleInput processes a single input file using the GenerativeAIClient.
-func (r *Runner) runSingleInput(index int, inputFilePath string, promptText string, gai process.GenerativeAIClient,
-	onBeforeProcessing func(), onAfterProcessing func()) error {
-	onBeforeProcessing()
-
+func (r *Runner) process(index int, inputFilePath string, promptText string, gai process.GenerativeAIClient) (*process.ShapeResult, error) {
 	r.verboseLog("\n")
 	r.verboseLog("[%d] get input text from: %s", index, inputFilePath)
 	inputText, err := process.GetInputText(inputFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	r.verboseLog("[%d] inputText: '%s'", index, inputText)
 
@@ -53,22 +48,17 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock)
 	result, err := s.ShapeText(promptText, inputText)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	processedPromptText, rawResult, resultText := result.Prompt, result.RawResult, result.Result
-	if !strings.HasSuffix(resultText, "\n") {
-		resultText += "\n"
-	}
-	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(processedPromptText), processedPromptText)
-	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(rawResult), rawResult)
-	r.verboseLog("[%d] resultText: '%s'", index, resultText)
-	onAfterProcessing()
+	return result, nil
+}
 
-	/*
-		Output
-	*/
+func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePath string, inputText string) error {
+	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(shapeResult.Prompt), shapeResult.Prompt)
+	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(shapeResult.RawResult), shapeResult.RawResult)
+	r.verboseLog("[%d] resultText: '%s'", index, shapeResult.Result)
 	if !r.config.Silent {
-		process.OutputToStdout(resultText, inputText, r.config.Diff)
+		process.OutputToStdout(shapeResult.Result, inputText, r.config.Diff)
 	}
 	outpath := r.config.Outpath
 	if r.config.Rewrite {
@@ -88,7 +78,7 @@ func (r *Runner) runSingleInput(index int, inputFilePath string, promptText stri
 	}
 	if outpath != "" {
 		r.verboseLog("[%d] Writing to file: %s", index, outpath)
-		return process.WriteResult(resultText, outpath)
+		return process.WriteResult(shapeResult.Result, outpath)
 	}
 	return nil
 }
@@ -129,18 +119,18 @@ func (r *Runner) Setup() (*RunOption, error) {
 
 // Run processing of multiple input files
 func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(), onAfterProcessing func()) error {
-
-	wrappedOnBeforeProcessStatus := func() {
+	for i, inputPath := range opt.inputFilePaths {
 		r.verboseLog("start processing")
 		onBeforeProcessing()
-	}
-	wrappedOnAfterProcessStatus := func() {
+		shapeResult, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
 		r.verboseLog("end processing")
 		onAfterProcessing()
-	}
 
-	for i, inputPath := range opt.inputFilePaths {
-		if err := r.runSingleInput(i+1, inputPath, opt.promptText, opt.gaiClient, wrappedOnBeforeProcessStatus, wrappedOnAfterProcessStatus); err != nil {
+		if err != nil {
+			return err
+		}
+
+		if err := r.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {
 			return err
 		}
 	}

@@ -18,6 +18,13 @@ type ShapeResult struct {
 	Result    string
 }
 
+func NewShapeResult(prompt, rawResult, result string) *ShapeResult {
+	if !strings.HasSuffix(result, "\n") {
+		result += "\n"
+	}
+	return &ShapeResult{Prompt: prompt, RawResult: rawResult, Result: result}
+}
+
 type Shaper struct {
 	gai                      GenerativeAIClient
 	maxCompletionRepeatCount int
@@ -35,7 +42,7 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 			return nil, err
 		}
 		result := rawResult
-		return &ShapeResult{Prompt: promptOrg, RawResult: rawResult, Result: result}, nil
+		return NewShapeResult(promptOrg, rawResult, result), nil
 	}
 
 	optimized := optimizePrompt(promptOrg, inputOrg)
@@ -47,7 +54,7 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ShapeResult{Prompt: optimized, RawResult: rawResult, Result: result}, nil
+	return NewShapeResult(optimized, rawResult, result), nil
 }
 
 func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
