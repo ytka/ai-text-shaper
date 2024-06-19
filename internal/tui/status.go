@@ -64,6 +64,9 @@ func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.statusText = string(msg)
 		return m, nil
 	case spinner.TickMsg:
+		if m.quitting {
+			return m, nil
+		}
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
@@ -91,10 +94,11 @@ func (m statusModel) View() string {
 	if m.err != nil {
 		return m.err.Error()
 	}
-	str := fmt.Sprintf("\n\n%s %s\n\n", m.spinner.View(), m.statusText)
+	str := fmt.Sprintf("%s %s", m.spinner.View(), m.statusText)
 	if m.quitting {
 		// Move the cursor to the start of the line and clear the line
-		return "\033[H\033[2J"
+		//return "\033[H\033[2J"
+		return ""
 
 	}
 	return str
