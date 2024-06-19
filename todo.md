@@ -1,1 +1,0 @@
-- TUIでResponse待ちにSpinnerなどを使う。ただし、Stdoutを邪魔しないようにする
