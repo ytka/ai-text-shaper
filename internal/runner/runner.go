@@ -11,6 +11,7 @@ import (
 // Runner manages the execution of text processing tasks.
 type Runner struct {
 	config                         *Config
+	inputFiles                     []string
 	generativeAIHandlerFactoryFunc GenerativeAIHandlerFactoryFunc
 	confirmFunc                    ConfirmFUnc
 	onChangeStatusFunc             func(string)
@@ -19,8 +20,13 @@ type Runner struct {
 type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
 type ConfirmFUnc func(string) (bool, error)
 
-func New(config *Config, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFUnc, onChangeStatusFunc func(string)) *Runner {
-	return &Runner{config: config, generativeAIHandlerFactoryFunc: gaiFactory, confirmFunc: confirmFunc, onChangeStatusFunc: onChangeStatusFunc}
+func New(config *Config,
+	inputFiles []string,
+	gaiFactory GenerativeAIHandlerFactoryFunc,
+	confirmFunc ConfirmFUnc,
+	onChangeStatusFunc func(string),
+) *Runner {
+	return &Runner{config: config, inputFiles: inputFiles, generativeAIHandlerFactoryFunc: gaiFactory, confirmFunc: confirmFunc, onChangeStatusFunc: onChangeStatusFunc}
 }
 
 func (r *Runner) verboseLog(msg string, args ...interface{}) {
@@ -92,42 +98,45 @@ func (r *Runner) onChangeStatus(status string) {
 	r.onChangeStatusFunc(status)
 }
 
-// Run processing of multiple input files
-func (r *Runner) Run(inputFiles []string) error {
-	r.onChangeStatus("Initializing...")
+type RunOption struct {
+	gaiClient      process.GenerativeAIClient
+	promptText     string
+	inputFilePaths []string
+}
+
+func (r *Runner) Setup() (*RunOption, error) {
+	r.onChangeStatusFunc("Setting up...")
 	r.verboseLog("configs: %+v", r.config)
-	r.verboseLog("inputFiles: %+v", inputFiles)
-
-	if err := r.config.Validate(inputFiles); err != nil {
-		return fmt.Errorf("invalid configuration: %+v, %w", r.config, err)
+	r.verboseLog("inputFiles: %+v", r.inputFiles)
+	if err := r.config.Validate(r.inputFiles); err != nil {
+		return nil, fmt.Errorf("invalid configuration: %+v, %w", r.config, err)
 	}
-
-	/*
-		Prepare
-	*/
 	r.verboseLog("make generative ai client")
 	gai, err := r.generativeAIHandlerFactoryFunc(r.config.Model)
 	if err != nil {
-		return fmt.Errorf("failed to make generative ai client: %w", err)
+		return nil, fmt.Errorf("failed to make generative ai client: %w", err)
 	}
 	r.verboseLog("get prompt")
 	promptText, err := process.GetPromptText(r.config.Prompt, r.config.PromptPath)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	r.verboseLog("promptText: '%s'", promptText)
 
-	/*
-		Process
-	*/
 	var inputFilePaths []string
-	if len(inputFiles) == 0 {
+	if len(r.inputFiles) == 0 {
 		inputFilePaths = []string{"-"}
 	} else {
-		inputFilePaths = inputFiles
+		inputFilePaths = r.inputFiles
 	}
-	for i, inputPath := range inputFilePaths {
-		err := r.runSingleInput(i+1, inputPath, promptText, gai)
+
+	return &RunOption{gaiClient: gai, promptText: promptText, inputFilePaths: inputFilePaths}, nil
+}
+
+// Run processing of multiple input files
+func (r *Runner) Run(opt *RunOption) error {
+	for i, inputPath := range opt.inputFilePaths {
+		err := r.runSingleInput(i+1, inputPath, opt.promptText, opt.gaiClient)
 		if err != nil {
 			return err
 		}

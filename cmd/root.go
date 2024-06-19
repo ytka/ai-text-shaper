@@ -105,18 +105,22 @@ var rootCmd = &cobra.Command{
 			}
 			inputFiles = files
 		}
-		//return doRun(inputFiles, makeGAIFunc)
-		return doRunWithStatus(inputFiles, makeGAIFunc)
+		return doRun(inputFiles, makeGAIFunc)
+		// return doRunWithStatus(inputFiles, makeGAIFunc)
 	},
 }
 
-func doRun(args []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
+func doRun(inputFiles []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
 	onChangeStatus := func(status string) {
 		// fmt.Println(status)
 	}
 
-	return runner.New(&c, makeGAIFunc, tui.Confirm, onChangeStatus).
-		Run(args)
+	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm, onChangeStatus)
+	ropt, err := r.Setup()
+	if err != nil {
+		return err
+	}
+	return r.Run(ropt)
 }
 
 func doRunWithStatus(args []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
