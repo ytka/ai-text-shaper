@@ -110,30 +110,29 @@ var rootCmd = &cobra.Command{
 }
 
 func doRun(inputFiles []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
-	statusUI := tui.NewStatusUI("ai-text-shaper")
-
-	var wg sync.WaitGroup
-	errChan := make(chan error, 1)
-	wg.Add(1)
-
-	onBeforeProcessing := func() {
-		go func() {
-			defer wg.Done()
-			if err := statusUI.Run(); err != nil {
-				errChan <- err
-			}
-		}()
-		statusUI.UpdateStatusText("Processing...")
-	}
-	onAfterProcessing := func() {
-		statusUI.Quit()
-		wg.Wait()
-	}
-
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
 	ropt, err := r.Setup()
 	if err != nil {
 		return err
 	}
+
+	var wg sync.WaitGroup
+	var statusUI *tui.StatusUI
+	onBeforeProcessing := func() {
+		wg.Add(1)
+		statusUI = tui.NewStatusUI("Processing...")
+		go func() {
+			defer wg.Done()
+			if err := statusUI.Run(); err != nil {
+				// errChan <- err
+			}
+		}()
+	}
+	onAfterProcessing := func() {
+		statusUI.Quit()
+		statusUI = nil
+		wg.Wait()
+	}
+
 	return r.Run(ropt, onBeforeProcessing, onAfterProcessing)
 }
