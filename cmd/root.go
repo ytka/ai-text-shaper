@@ -109,6 +109,16 @@ var rootCmd = &cobra.Command{
 	},
 }
 
+func isPipe(file *os.File) bool {
+	fileInfo, err := file.Stat()
+	if err != nil {
+		return false
+	}
+
+	// モードがパイプかどうかを確認
+	return (fileInfo.Mode() & os.ModeNamedPipe) != 0
+}
+
 func doRun(inputFiles []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
 	ropt, err := r.Setup()
@@ -116,22 +126,27 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 		return err
 	}
 
-	var wg sync.WaitGroup
-	var statusUI *tui.StatusUI
-	onBeforeProcessing := func() {
-		wg.Add(1)
-		statusUI = tui.NewStatusUI("Processing...")
-		go func() {
-			defer wg.Done()
-			if err := statusUI.Run(); err != nil {
-				// errChan <- err
-			}
-		}()
-	}
-	onAfterProcessing := func() {
-		statusUI.Quit()
-		statusUI = nil
-		wg.Wait()
+	onBeforeProcessing := func() {}
+	onAfterProcessing := func() {}
+
+	if !isPipe(os.Stdout) {
+		var wg sync.WaitGroup
+		var statusUI *tui.StatusUI
+		onBeforeProcessing = func() {
+			wg.Add(1)
+			statusUI = tui.NewStatusUI("Processing...")
+			go func() {
+				defer wg.Done()
+				if err := statusUI.Run(); err != nil {
+					// errChan <- err
+				}
+			}()
+		}
+		onAfterProcessing = func() {
+			statusUI.Quit()
+			statusUI = nil
+			wg.Wait()
+		}
 	}
 
 	return r.Run(ropt, onBeforeProcessing, onAfterProcessing)
