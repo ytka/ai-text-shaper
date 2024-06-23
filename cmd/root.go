@@ -134,7 +134,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.Generative
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
 	ropt, err := r.Setup()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to setup runner: %w", err)
 	}
 
 	onBeforeProcessing := func(string) {}
@@ -169,5 +169,8 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.Generative
 		}
 	}
 
-	return r.Run(ropt, onBeforeProcessing, onAfterProcessing)
+	if err := r.Run(ropt, onBeforeProcessing, onAfterProcessing); err != nil {
+		return fmt.Errorf("failed to run: %w", err)
+	}
+	return nil
 }

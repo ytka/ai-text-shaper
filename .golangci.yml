@@ -8,8 +8,8 @@ linters:
     #    - bugs
     - comment
     - complexity
-    #    - error
-    #    - format
+    - error
+    #- format
     #    - import
     #    - metalinter
     #    - module
