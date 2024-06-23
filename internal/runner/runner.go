@@ -3,8 +3,10 @@ package runner
 import (
 	"errors" // fixed: Added for defining static errors
 	"fmt"
+	"github/ytka/ai-text-shaper/internal/ioutil"
 	"github/ytka/ai-text-shaper/internal/steps"
 	"log"
+	"os"
 )
 
 var (
@@ -76,6 +78,19 @@ func (r *Runner) Setup() (*RunOption, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get prompt text: %w", err)
 	}
+	pipeAvailable, err := ioutil.IsAvailablePipe(os.Stdin)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check if stdin is pipe: %w", err)
+	}
+	promptAdded := ""
+	if pipeAvailable && len(r.inputFiles) >= 1 {
+		added, err := steps.GetInputText("-")
+		if err != nil {
+			return nil, fmt.Errorf("failed to get input text from stdin: %w", err)
+		}
+		promptAdded = added
+	}
+	promptText += promptAdded
 
 	var inputFilePaths []string
 	if len(r.inputFiles) == 0 {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github/ytka/ai-text-shaper/internal/ioutil"
 	"github/ytka/ai-text-shaper/internal/steps"
 	"os"
 	"strings"
@@ -121,15 +122,6 @@ func readInputFiles(fileName string) ([]string, error) {
 	return files, nil
 }
 
-func isPipe(file *os.File) (bool, error) {
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return false, fmt.Errorf("failed to get file info: %w", err)
-	}
-	// Checks if the mode is pipe
-	return (fileInfo.Mode() & os.ModeNamedPipe) != 0, nil
-}
-
 func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.GenerativeAIClient, error)) error {
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
 	ropt, err := r.Setup()
@@ -140,12 +132,13 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.Generative
 	onBeforeProcessing := func(string) {}
 	onAfterProcessing := func(string) {}
 
-	pipe, err := isPipe(os.Stdin)
+	pipeAvailable, err := ioutil.IsAvailablePipe(os.Stdin)
 	if err != nil {
 		return fmt.Errorf("failed to check if stdin is pipe: %w", err)
 	}
 
-	if !pipe {
+	enableTUI := !c.Silent && !pipeAvailable
+	if enableTUI {
 		var wg sync.WaitGroup
 		var statusUI *tui.StatusUI
 		onBeforeProcessing = func(inpath string) {
