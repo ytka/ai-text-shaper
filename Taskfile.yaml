@@ -16,7 +16,9 @@ tasks:
   lint-fix-ai:
     desc: Fix lint errors
     cmds:
-      - golangci-lint run --fix > /tmp/lint-fix-ai.txt
+       - golangci-lint run > /tmp/lint.txt || true
+       - |
+         files=$(cat /tmp/lint.txt | awk -F: '/.go:/ {print $1}' | sort | uniq) && cat /tmp/lint.txt | go run main.go --rewrite -P=/tmp/prompt.txt $files
   import-fix:
     desc: Fix import errors
     cmds:
