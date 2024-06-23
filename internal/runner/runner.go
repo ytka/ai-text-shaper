@@ -86,7 +86,9 @@ func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePa
 
 	if outpath != "" && !r.config.DryRun {
 		r.verboseLog("[%d] Writing to file: %s", index, outpath)
-		return process.WriteResult(shapeResult.Result, outpath)
+		if err := process.WriteResult(shapeResult.Result, outpath); err != nil {
+			return err
+		}
 	}
 	if r.config.Rewrite {
 		if r.config.DryRun {
