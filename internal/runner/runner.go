@@ -3,8 +3,8 @@ package runner
 import (
 	"errors" // fixed: Added for defining static errors
 	"fmt"
-	"github/ytka/ai-text-shaper/internal/ioutil"
-	"github/ytka/ai-text-shaper/internal/steps"
+	"github.com/ytka/ai-text-shaper/internal/ioutil"
+	"github.com/ytka/ai-text-shaper/internal/steps"
 	"log"
 	"os"
 )

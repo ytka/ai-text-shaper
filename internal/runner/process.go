@@ -3,7 +3,7 @@ package runner
 import (
 	"fmt"
 	"github.com/pkg/errors"
-	"github/ytka/ai-text-shaper/internal/steps"
+	"github.com/ytka/ai-text-shaper/internal/steps"
 	"log"
 	"os"
 )

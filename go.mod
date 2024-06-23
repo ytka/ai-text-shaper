@@ -1,4 +1,4 @@
-module github/ytka/ai-text-shaper
+module github.com/ytka/ai-text-shaper
 
 go 1.22.2
 

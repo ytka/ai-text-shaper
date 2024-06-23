@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github/ytka/ai-text-shaper/internal/openai"
+	"github.com/ytka/ai-text-shaper/internal/openai"
 )
 
 // GenerativeAIClient represents an interface for generating AI client operations.

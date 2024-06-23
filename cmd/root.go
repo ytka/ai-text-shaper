@@ -8,11 +8,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github/ytka/ai-text-shaper/internal/ioutil"
-	"github/ytka/ai-text-shaper/internal/openai"
-	"github/ytka/ai-text-shaper/internal/runner"
-	"github/ytka/ai-text-shaper/internal/steps"
-	"github/ytka/ai-text-shaper/internal/tui"
+	"github.com/ytka/ai-text-shaper/internal/ioutil"
+	"github.com/ytka/ai-text-shaper/internal/openai"
+	"github.com/ytka/ai-text-shaper/internal/runner"
+	"github.com/ytka/ai-text-shaper/internal/steps"
+	"github.com/ytka/ai-text-shaper/internal/tui"
 )
 
 var (
