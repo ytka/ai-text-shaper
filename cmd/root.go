@@ -128,15 +128,19 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 		return err
 	}
 
-	onBeforeProcessing := func() {}
-	onAfterProcessing := func() {}
+	onBeforeProcessing := func(string) {}
+	onAfterProcessing := func(string) {}
 
 	if !isPipe(os.Stdout) {
 		var wg sync.WaitGroup
 		var statusUI *tui.StatusUI
-		onBeforeProcessing = func() {
+		onBeforeProcessing = func(inpath string) {
 			wg.Add(1)
-			statusUI = tui.NewStatusUI("Processing...")
+			input := "Stdin"
+			if inpath != "-" {
+				input = inpath
+			}
+			statusUI = tui.NewStatusUI(fmt.Sprintf("Input from %s, Processing... ", input))
 			go func() {
 				defer wg.Done()
 				if err := statusUI.Run(); err != nil {
@@ -144,7 +148,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 				}
 			}()
 		}
-		onAfterProcessing = func() {
+		onAfterProcessing = func(string) {
 			statusUI.Quit()
 			statusUI = nil
 			wg.Wait()

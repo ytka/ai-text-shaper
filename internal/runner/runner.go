@@ -126,22 +126,22 @@ func (r *Runner) Setup() (*RunOption, error) {
 }
 
 // Run processing of multiple input files
-func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(), onAfterProcessing func()) error {
+func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
 	for i, inputPath := range opt.inputFilePaths {
 		r.verboseLog("start processing")
 
-		onBeforeProcessing()
+		onBeforeProcessing(inputPath)
 		shapeResult := &process.ShapeResult{}
 		if !r.config.DryRun {
 			result, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
 			r.verboseLog("end processing")
 			if err != nil {
-				onAfterProcessing()
+				onAfterProcessing(inputPath)
 				return err
 			}
 			shapeResult = result
 		}
-		onAfterProcessing()
+		onAfterProcessing(inputPath)
 
 		if err := r.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {
 			return err
