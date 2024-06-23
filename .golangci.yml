@@ -12,8 +12,8 @@ linters:
     # - format
     #    - import
     - metalinter
-    #    - module
-    #    - performance
+    # - module
+    - performance
     #    - style
     #    - test
     - unused

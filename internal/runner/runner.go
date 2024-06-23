@@ -87,7 +87,7 @@ func (r *Runner) Setup() (*RunOption, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to get input text from stdin: %w", err)
 		}
-		promptText += fmt.Sprintf("\n%s", added)
+		promptText += "\n" + added
 	}
 
 	var inputFilePaths []string
