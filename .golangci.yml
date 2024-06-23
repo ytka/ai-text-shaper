@@ -14,8 +14,8 @@ linters:
     - metalinter
     # - module
     - performance
-    #    - style
-    #    - test
+    #- style
+    # - test
     - unused
 linters-settings:
   goimports:

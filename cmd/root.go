@@ -36,7 +36,7 @@ var (
 )
 
 func init() {
-	rootCmd.Version = "testX"
+	rootCmd.Version = "unknown-version"
 
 	// Prompt options
 	rootCmd.Flags().StringVarP(&c.Prompt, "prompt", "p", "", "Prompt text")
