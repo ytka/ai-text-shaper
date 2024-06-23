@@ -2,11 +2,22 @@ package runner
 
 import (
 	"fmt"
+	"github/ytka/ai-text-shaper/internal/steps"
 	"log"
-	"os"
-
-	"github/ytka/ai-text-shaper/internal/process"
 )
+
+func (c *Config) Validate(inputFiles []string) error {
+	if c.Prompt == "" && c.PromptPath == "" {
+		return fmt.Errorf("either prompt or prompt-path must be provided")
+	}
+	if c.Outpath != "" && c.Rewrite {
+		return fmt.Errorf("outpath and rewrite cannot be provided together")
+	}
+	if c.Outpath != "" && len(inputFiles) > 1 {
+		return fmt.Errorf("outpath cannot be provided when multiple input files are provided")
+	}
+	return nil
+}
 
 // Runner manages the execution of text processing tasks.
 type Runner struct {
@@ -17,7 +28,7 @@ type Runner struct {
 }
 
 type (
-	GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
+	GenerativeAIHandlerFactoryFunc func(model string) (steps.GenerativeAIClient, error)
 	ConfirmFunc                    func(string) (bool, error)
 )
 
@@ -36,76 +47,8 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
-func (r *Runner) process(index int, inputFilePath string, promptText string, gai process.GenerativeAIClient) (*process.ShapeResult, error) {
-	r.verboseLog("\n")
-	r.verboseLog("[%d] get input text from: %s", index, inputFilePath)
-	inputText, err := process.GetInputText(inputFilePath)
-	if err != nil {
-		return nil, err
-	}
-	r.verboseLog("[%d] inputText: '%s'", index, inputText)
-
-	r.verboseLog("[%d] shaping text", index)
-	shaper := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock, r.config.PromptOptimize)
-	result, err := shaper.ShapeText(promptText, inputText)
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func (r *Runner) confirm(index int, inputFilePath string) error {
-	r.verboseLog("[%d] Confirming", index)
-	conf, err := r.confirmFunc("Continue (y/n)?: ")
-	if err != nil {
-		return err
-	}
-	r.verboseLog("[%d] Confirmation: %t", index, conf)
-	if !conf && inputFilePath == "-" {
-		os.Exit(1)
-	}
-	return nil
-}
-
-func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePath string, inputText string) error {
-	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(shapeResult.Prompt), shapeResult.Prompt)
-	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(shapeResult.RawResult), shapeResult.RawResult)
-	r.verboseLog("[%d] resultText: '%s'", index, shapeResult.Result)
-
-	if !r.config.Silent && !r.config.DryRun && !r.config.Rewrite {
-		process.Print(shapeResult.Result, inputText, r.config.Diff)
-	}
-
-	if r.config.Confirm {
-		if err := r.confirm(index, inputFilePath); err != nil {
-			return err
-		}
-	}
-
-	outpath := r.config.Outpath
-	if r.config.Rewrite {
-		outpath = inputFilePath
-	}
-	if outpath != "" && !r.config.DryRun {
-		r.verboseLog("[%d] Writing to file: %s", index, outpath)
-		if err := process.WriteResult(shapeResult.Result, outpath); err != nil {
-			return err
-		}
-	}
-	if r.config.Rewrite {
-		if r.config.DryRun {
-			fmt.Printf("Rewrite file:%s, dry-run skipped.\n", inputFilePath)
-		} else {
-			isDiff, added, removed := process.GetDiffSize(inputText, shapeResult.Result)
-			fmt.Printf("Rewrite file:%s, changed:=%v added:%d, removed:%d\n", inputFilePath, isDiff, added, removed)
-		}
-	}
-
-	return nil
-}
-
 type RunOption struct {
-	gaiClient      process.GenerativeAIClient
+	gaiClient      steps.GenerativeAIClient
 	promptText     string
 	inputFilePaths []string
 }
@@ -122,7 +65,7 @@ func (r *Runner) Setup() (*RunOption, error) {
 		return nil, fmt.Errorf("failed to make generative ai client: %w", err)
 	}
 	r.verboseLog("get prompt")
-	promptText, err := process.GetPromptText(r.config.Prompt, r.config.PromptPath)
+	promptText, err := steps.GetPromptText(r.config.Prompt, r.config.PromptPath)
 	if err != nil {
 		return nil, err
 	}
@@ -141,22 +84,8 @@ func (r *Runner) Setup() (*RunOption, error) {
 // Run processing of multiple input files.
 func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
 	for i, inputPath := range opt.inputFilePaths {
-		r.verboseLog("start processing")
-
-		onBeforeProcessing(inputPath)
-		shapeResult := &process.ShapeResult{}
-		if !r.config.DryRun {
-			result, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
-			r.verboseLog("end processing")
-			if err != nil {
-				onAfterProcessing(inputPath)
-				return err
-			}
-			shapeResult = result
-		}
-		onAfterProcessing(inputPath)
-
-		if err := r.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {
+		p := NewProcess(r.config, r.confirmFunc)
+		if err := p.Run(i, inputPath, opt, onBeforeProcessing, onAfterProcessing); err != nil {
 			return err
 		}
 	}

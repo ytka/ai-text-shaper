@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"github/ytka/ai-text-shaper/internal/steps"
 	"os"
 	"strings"
 	"sync"
@@ -9,7 +10,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"github/ytka/ai-text-shaper/internal/openai"
-	"github/ytka/ai-text-shaper/internal/process"
 	"github/ytka/ai-text-shaper/internal/runner"
 	"github/ytka/ai-text-shaper/internal/tui"
 )
@@ -91,7 +91,7 @@ func getAPIKey() (openai.APIKey, error) {
 	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
 }
 
-func makeGAIFunc(model string) (process.GenerativeAIClient, error) {
+func makeGAIFunc(model string) (steps.GenerativeAIClient, error) {
 	apikey, err := getAPIKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get API key: %w", err)
@@ -130,7 +130,7 @@ func isPipe(file *os.File) (bool, error) {
 	return (fileInfo.Mode() & os.ModeNamedPipe) != 0, nil
 }
 
-func doRun(inputFiles []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
+func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.GenerativeAIClient, error)) error {
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
 	ropt, err := r.Setup()
 	if err != nil {
