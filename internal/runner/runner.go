@@ -51,21 +51,26 @@ func (r *Runner) process(index int, inputFilePath string, promptText string, gai
 	return result, nil
 }
 
+func (r *Runner) confirm(index int, inputFilePath string) error {
+	r.verboseLog("[%d] Confirming", index)
+	conf, err := r.confirmFunc("Continue (y/n)?: ")
+	if err != nil {
+		return err
+	}
+	r.verboseLog("[%d] Confirmation: %t", index, conf)
+	if !conf && inputFilePath == "-" {
+		os.Exit(1)
+	}
+	return nil
+}
+
 func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePath string, inputText string) error {
 	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(shapeResult.Prompt), shapeResult.Prompt)
 	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(shapeResult.RawResult), shapeResult.RawResult)
 	r.verboseLog("[%d] resultText: '%s'", index, shapeResult.Result)
 
-	if r.config.Rewrite {
-		fmt.Println("Rewrite file:", inputFilePath)
-	} else {
-		if !r.config.Silent && !r.config.DryRun {
-			process.OutputToStdout(shapeResult.Result, inputText, r.config.Diff)
-		}
-	}
-
-	if r.config.DryRun {
-		return nil
+	if !r.config.Silent && !r.config.DryRun && !r.config.Rewrite {
+		process.OutputToStdout(shapeResult.Result, inputText, r.config.Diff)
 	}
 
 	outpath := r.config.Outpath
@@ -74,20 +79,24 @@ func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePa
 	}
 
 	if r.config.Confirm {
-		r.verboseLog("[%d] Confirming", index)
-		conf, err := r.confirmFunc("Continue (y/n)?: ")
-		if err != nil {
+		if err := r.confirm(index, inputFilePath); err != nil {
 			return err
 		}
-		r.verboseLog("[%d] Confirmation: %t", index, conf)
-		if !conf {
-			os.Exit(1)
-		}
 	}
-	if outpath != "" {
+
+	if outpath != "" && !r.config.DryRun {
 		r.verboseLog("[%d] Writing to file: %s", index, outpath)
 		return process.WriteResult(shapeResult.Result, outpath)
 	}
+	if r.config.Rewrite {
+		if r.config.DryRun {
+			fmt.Printf("Rewrite file:%s, dry-run skipped.\n", inputFilePath)
+		} else {
+			isDiff, added, removed := process.GetDiffSize(inputText, shapeResult.Result)
+			fmt.Printf("Rewrite file:%s, changed:=%v added:%d, removed:%d\n", inputFilePath, isDiff, added, removed)
+		}
+	}
+
 	return nil
 }
 

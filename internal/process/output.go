@@ -14,6 +14,24 @@ func diff(leftText, rightText string) string {
 	return dmp.DiffPrettyText(diffs)
 }
 
+func GetDiffSize(leftText, rightText string) (bool, int, int) {
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(leftText, rightText, false)
+
+	added := 0
+	removed := 0
+	for _, diff := range diffs {
+		switch diff.Type {
+		case diffmatchpatch.DiffInsert:
+			added += len(diff.Text)
+		case diffmatchpatch.DiffDelete:
+			removed += len(diff.Text)
+		}
+	}
+
+	return added > 0 || removed > 0, added, removed
+}
+
 func OutputToStdout(outputText, inputText string, useDiff bool) {
 	fmt.Print(outputText)
 

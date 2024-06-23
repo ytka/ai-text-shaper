@@ -140,7 +140,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 			if inpath != "-" {
 				input = inpath
 			}
-			statusUI = tui.NewStatusUI(fmt.Sprintf("Input from %s, Processing... ", input))
+			statusUI = tui.NewStatusUI(fmt.Sprintf("Processing... [%s]", input))
 			go func() {
 				defer wg.Done()
 				if err := statusUI.Run(); err != nil {
