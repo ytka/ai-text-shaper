@@ -111,7 +111,6 @@ func (p *Process) write(index int, resultText string, outpath string) error {
 }
 
 func (p *Process) output(shapeResult *steps.ShapeResult, index int, inputFilePath string, inputText string) error {
-	p.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(shapeResult.Prompt), shapeResult.Prompt)
 	p.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(shapeResult.RawResult), shapeResult.RawResult)
 	p.verboseLog("[%d] resultText: '%s'", index, shapeResult.Result)
 

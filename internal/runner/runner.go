@@ -76,7 +76,6 @@ func (r *Runner) Setup() (*RunOption, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get prompt text: %w", err)
 	}
-	r.verboseLog("promptText: '%s'", promptText)
 
 	var inputFilePaths []string
 	if len(r.inputFiles) == 0 {
