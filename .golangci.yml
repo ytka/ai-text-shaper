@@ -1,20 +1,33 @@
+run:
+  timeout: 5m
+  tests: true
+output:
+    sort-results: true
+linters:
+  presets:
+    #    - bugs
+    - comment
+    - complexity
+    #    - error
+    #    - format
+    #    - import
+    #    - metalinter
+    #    - module
+    #    - performance
+    #    - sql
+    #    - style
+    #    - test
+    - unused
 linters-settings:
   goimports:
     local-prefixes: github/ytka/ai-text-shaper
-linters:
-  presets:
-    - bugs
-    - comment
-    - complexity
-    - error
-    - format
-    - import
-    - metalinter
-    - module
-    - performance
-    - sql
-    - style
-    - test
-    - unused
-run:
-  timeout: 5m
+  cyclop:
+    max-complexity: 10
+  gofumpt:
+    extra-rules: true
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+  lll:
+    line-length: 150
