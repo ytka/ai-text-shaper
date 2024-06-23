@@ -1,29 +1,26 @@
 package runner
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Config struct {
-	Prompt         string
-	PromptPath     string
-	PromptOptimize bool
-
-	Model                    string
-	MaxTokens                int
+	Prompt                string
+	PromptPath            string
+	PromptOptimize        bool
+	Model                 string
+	MaxTokens             int
 	MaxCompletionRepeatCount int
-
-	DryRun  bool
-	Silent  bool
-	Verbose bool
-	Diff    bool
-
-	InputFileList string
-
-	LogAPILevel string
-
-	Rewrite           bool
-	Outpath           string
-	UseFirstCodeBlock bool
-	Confirm           bool
+	DryRun                bool
+	Silent                bool
+	Verbose               bool
+	Diff                  bool
+	InputFileList         string
+	LogAPILevel           string
+	Rewrite               bool
+	Outpath               string
+	UseFirstCodeBlock     bool
+	Confirm               bool
 }
 
 func (c *Config) Validate(inputFiles []string) error {

@@ -9,7 +9,7 @@ import (
 )
 
 type updateStatusMsg string
-type quiteMsg struct{}
+type quitMsg struct{}
 
 type StatusUI struct {
 	program *tea.Program
@@ -18,7 +18,10 @@ type StatusUI struct {
 
 func NewStatusUI(initialMessage string) *StatusUI {
 	model := newStatusModel(initialMessage)
-	return &StatusUI{program: tea.NewProgram(model), model: model}
+	return &StatusUI{
+		program: tea.NewProgram(model),
+		model:   model,
+	}
 }
 
 func (s *StatusUI) Run() error {
@@ -27,7 +30,7 @@ func (s *StatusUI) Run() error {
 }
 
 func (s *StatusUI) Quit() {
-	s.program.Send(quiteMsg{})
+	s.program.Send(quitMsg{})
 }
 
 func (s *StatusUI) UpdateStatusText(statusText string) {
@@ -57,7 +60,7 @@ func (m statusModel) Init() tea.Cmd {
 
 func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case quiteMsg:
+	case quitMsg:
 		m.spinner.Update(tea.Quit())
 		m.quitting = true
 		return m, tea.Quit
@@ -97,10 +100,7 @@ func (m statusModel) View() string {
 	}
 	str := fmt.Sprintf("%s %s", m.spinner.View(), m.statusText)
 	if m.quitting {
-		// Move the cursor to the start of the line and clear the line
-		//return "\033[H\033[2J"
 		return ""
-
 	}
 	return str
 }

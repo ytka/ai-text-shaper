@@ -9,6 +9,7 @@ func GetPromptText(prompt, promptPath string) (string, error) {
 	if prompt == "" && promptPath == "" {
 		return "", fmt.Errorf("prompt is required")
 	}
+
 	if prompt == "" && promptPath != "" {
 		text, err := os.ReadFile(promptPath)
 		if err != nil {
@@ -16,5 +17,6 @@ func GetPromptText(prompt, promptPath string) (string, error) {
 		}
 		return string(text), nil
 	}
+
 	return prompt, nil
 }

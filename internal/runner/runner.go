@@ -12,18 +12,19 @@ type Runner struct {
 	config                         *Config
 	inputFiles                     []string
 	generativeAIHandlerFactoryFunc GenerativeAIHandlerFactoryFunc
-	confirmFunc                    ConfirmFUnc
+	confirmFunc                    ConfirmFunc
 }
 
 type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
-type ConfirmFUnc func(string) (bool, error)
+type ConfirmFunc func(string) (bool, error)
 
-func New(config *Config,
-	inputFiles []string,
-	gaiFactory GenerativeAIHandlerFactoryFunc,
-	confirmFunc ConfirmFUnc,
-) *Runner {
-	return &Runner{config: config, inputFiles: inputFiles, generativeAIHandlerFactoryFunc: gaiFactory, confirmFunc: confirmFunc}
+func New(config *Config, inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFunc) *Runner {
+	return &Runner{
+		config:                         config,
+		inputFiles:                     inputFiles,
+		generativeAIHandlerFactoryFunc: gaiFactory,
+		confirmFunc:                    confirmFunc,
+	}
 }
 
 func (r *Runner) verboseLog(msg string, args ...interface{}) {
@@ -41,12 +42,9 @@ func (r *Runner) process(index int, inputFilePath string, promptText string, gai
 	}
 	r.verboseLog("[%d] inputText: '%s'", index, inputText)
 
-	/*
-		Shape
-	*/
 	r.verboseLog("[%d] shaping text", index)
-	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock, r.config.PromptOptimize)
-	result, err := s.ShapeText(promptText, inputText)
+	shaper := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock, r.config.PromptOptimize)
+	result, err := shaper.ShapeText(promptText, inputText)
 	if err != nil {
 		return nil, err
 	}

@@ -18,29 +18,30 @@ var c runner.Config
 
 func init() {
 	rootCmd.Version = "testX"
-	// prompt options
+
+	// Prompt options
 	rootCmd.Flags().StringVarP(&c.Prompt, "prompt", "p", "", "Prompt text")
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
 	rootCmd.Flags().BoolVarP(&c.PromptOptimize, "prompt-optimize", "O", true, "Optimize prompt text")
 
-	// model options
-	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "statusModel to use for text generation")
+	// Model options
+	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
 	rootCmd.Flags().IntVarP(&c.MaxTokens, "max-tokens", "t", 0, "Max tokens to generate")
 	rootCmd.Flags().IntVar(&c.MaxCompletionRepeatCount, "max-completion-repeat-count", 1, "Max completion repeat count")
 
-	// stdout messages options
+	// Stdout messages options
 	rootCmd.Flags().BoolVarP(&c.DryRun, "dry-run", "D", false, "Dry run")
 	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
 	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
 
-	// input file options
+	// Input file options
 	rootCmd.Flags().StringVarP(&c.InputFileList, "input-file-list", "i", "", "Input file list")
 
-	// debug options
+	// Debug options
 	rootCmd.Flags().StringVarP(&c.LogAPILevel, "log-api-level", "l", "", "API log level: info, debug")
 
-	// write file options
+	// Write file options
 	rootCmd.Flags().BoolVarP(&c.Rewrite, "rewrite", "r", false, "Rewrite the input file with the result")
 	rootCmd.Flags().StringVarP(&c.Outpath, "outpath", "o", "", "Output file path")
 	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
@@ -116,8 +117,7 @@ func isPipe(file *os.File) bool {
 	if err != nil {
 		return false
 	}
-
-	// モードがパイプかどうかを確認
+	// Checks if the mode is pipe
 	return (fileInfo.Mode() & os.ModeNamedPipe) != 0
 }
 
@@ -140,7 +140,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 			go func() {
 				defer wg.Done()
 				if err := statusUI.Run(); err != nil {
-					fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
 				}
 			}()
 		}

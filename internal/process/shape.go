@@ -26,7 +26,11 @@ func NewShapeResult(prompt, rawResult, result string) *ShapeResult {
 	if !strings.HasSuffix(result, "\n") {
 		result += "\n"
 	}
-	return &ShapeResult{Prompt: prompt, RawResult: rawResult, Result: result}
+	return &ShapeResult{
+		Prompt:    prompt,
+		RawResult: rawResult,
+		Result:    result,
+	}
 }
 
 // Shaper is responsible for shaping the text by interacting with GenerativeAIClient.

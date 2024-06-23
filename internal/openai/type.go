@@ -16,7 +16,6 @@ type CreateChatCompletion struct {
 	N              *int            `json:"n,omitempty"`
 	Temperature    *float64        `json:"temperature,omitempty"`
 	Seed           *int            `json:"seed,omitempty"`
-
 	TopP             *float64           `json:"top_p,omitempty"`
 	Stop             []string           `json:"stop,omitempty"`
 	FrequencyPenalty *float64           `json:"frequency_penalty,omitempty"`
@@ -37,7 +36,6 @@ type ChatCompletion struct {
 		FinishReason string      `json:"finish_reason"`
 		Index        int         `json:"index"`
 		Message      ChatMessage `json:"message"`
-		// Logprobs     interface{} `json:"logprobs"`
 	} `json:"choices"`
 	Usage struct {
 		PromptTokens     int `json:"prompt_tokens"`
@@ -50,16 +48,16 @@ type ResponseFormat struct {
 	Type string `json:"type"`
 }
 
-// ErrorResponse represents the JSON structure for the error response
+// ErrorResponse represents the JSON structure for the error response.
 type ErrorResponse struct {
 	Error ErrorDetail `json:"error"`
 }
 
-// ErrorDetail represents the details of the error
+// ErrorDetail represents the details of the error.
 type ErrorDetail struct {
 	Message string      `json:"message"`
 	Type    string      `json:"type"`
-	Param   interface{} `json:"param"` // Param can be of any type, hence using interface{}
+	Param   interface{} `json:"param"` // Param can be of any type, hence using interface{}.
 	Code    string      `json:"code"`
 }
 

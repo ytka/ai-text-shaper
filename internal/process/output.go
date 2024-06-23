@@ -18,7 +18,11 @@ func OutputToStdout(outputText, inputText string, useDiff bool) {
 	fmt.Print(outputText)
 
 	if useDiff {
-		fmt.Printf("\n====begin of diff==== in size: %d, out size: %d\n", len(inputText), len(outputText))
+		fmt.Printf(
+			"\n====begin of diff==== in size: %d, out size: %d\n",
+			len(inputText),
+			len(outputText),
+		)
 		fmt.Print(diff(inputText, outputText))
 		fmt.Println("====end of diff====")
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Confirm prompts the user with a message and waits for a confirmation.
 func Confirm(message string) (bool, error) {
 	m := newConfirmModel(message)
 
@@ -24,14 +25,13 @@ type confirmModel struct {
 	confirmed bool
 }
 
-func newConfirmModel(initialPrompt string) (m confirmModel) {
+func newConfirmModel(initialPrompt string) confirmModel {
 	i := textinput.New()
 	i.Prompt = initialPrompt
 	i.Cursor.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("63"))
 	i.CursorEnd()
 	i.Focus()
-	m.userInput = i
-	return
+	return confirmModel{userInput: i}
 }
 
 func (m confirmModel) Init() tea.Cmd {

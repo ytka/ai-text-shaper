@@ -15,7 +15,7 @@ type ChatClient struct {
 	maxTokens *int
 }
 
-func New(apikey APIKey, model string, logLevel string, maxTokens *int) *ChatClient {
+func New(apikey APIKey, model, logLevel string, maxTokens *int) *ChatClient {
 	return &ChatClient{
 		apikey:    apikey,
 		model:     model,
@@ -33,6 +33,7 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
+
 	switch c.logLevel {
 	case "info":
 		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", ccc.Model, ccc.N, ccc.Seed, ccc.ResponseFormat)
@@ -70,15 +71,17 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	if err := json.Unmarshal(body, &comp); err != nil {
 		return nil, err
 	}
+
 	switch c.logLevel {
 	case "info":
 		fmt.Printf("ID: %s, Object: %s, Created: %d, Model: %s, SystemFingerprint: %s, ChoicesCount:%d\n",
 			comp.ID, comp.Object, comp.Created, comp.Model, comp.SystemFingerprint, len(comp.Choices))
 		if len(comp.Choices) > 0 {
-			fmt.Printf("[0]FinishReason: %s, Index: %d", comp.Choices[0].FinishReason, comp.Choices[0].Index)
+			fmt.Printf("[0]FinishReason: %s, Index: %d\n", comp.Choices[0].FinishReason, comp.Choices[0].Index)
 		}
 	case "debug":
 		fmt.Printf("responseBody: %s\n", body)
 	}
+
 	return &comp, nil
 }
