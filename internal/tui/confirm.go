@@ -41,7 +41,7 @@ func (m confirmModel) Init() tea.Cmd {
 
 func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if key, ok := msg.(tea.KeyMsg); ok {
-		switch key.Type {
+		switch key.Type { //nolint:exhaustive
 		case tea.KeyCtrlC, tea.KeyEscape:
 			return m, tea.Quit
 		case tea.KeyEnter:
