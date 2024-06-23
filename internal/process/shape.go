@@ -39,7 +39,12 @@ type Shaper struct {
 
 // NewShaper creates a new Shaper.
 func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock, promptOptimize bool) *Shaper {
-	return &Shaper{gai: gai, maxCompletionRepeatCount: maxCompletionRepeatCount, useFirstCodeBlock: useFirstCodeBlock, promptOptimize: promptOptimize}
+	return &Shaper{
+		gai:                      gai,
+		maxCompletionRepeatCount: maxCompletionRepeatCount,
+		useFirstCodeBlock:        useFirstCodeBlock,
+		promptOptimize:           promptOptimize,
+	}
 }
 
 // ShapeText shapes the text based on the given prompts.

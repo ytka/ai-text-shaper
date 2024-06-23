@@ -1,1 +1,1 @@
-GoコードをGoogle Style Guide (https://google.github.io/styleguide/)に基づいて修正て。
+GoコードをGoogle Style Guide (https://google.github.io/styleguide/)に基づいて修正して。
