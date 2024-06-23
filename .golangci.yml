@@ -5,7 +5,7 @@ output:
     sort-results: true
 linters:
   presets:
-    #    - bugs
+    - bugs
     - comment
     - complexity
     - error
@@ -14,7 +14,6 @@ linters:
     #    - metalinter
     #    - module
     #    - performance
-    #    - sql
     #    - style
     #    - test
     - unused

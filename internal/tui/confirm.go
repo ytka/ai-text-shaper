@@ -55,6 +55,8 @@ func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.userInput.Reset()
 			return m, nil
+		default:
+			return m, nil
 		}
 	}
 

@@ -2,6 +2,7 @@ package openai
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -43,7 +44,8 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 		fmt.Printf("createChatCompletion: %s\n", requestBody)
 	}
 
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
+	cnt := context.Background()
+	req, err := http.NewRequestWithContext(cnt, "POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new request: %w", err)
 	}
@@ -83,25 +85,25 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
+	defer func(body io.ReadCloser) {
+		err := body.Close()
 		if err != nil {
 			fmt.Printf("failed to close response body: %s\n", err)
 		}
 	}(resp.Body)
 
-	body, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	if resp.StatusCode > 299 {
 		var errorResponse ErrorResponse
-		if err := json.Unmarshal(body, &errorResponse); err != nil {
+		if err := json.Unmarshal(respBody, &errorResponse); err != nil {
 			return nil, fmt.Errorf("failed to unmarshal error response: %w", err)
 		}
 		return nil, fmt.Errorf("%w: %d '%s'", ErrUnexpectedStatusCode, resp.StatusCode, errorResponse.Error.Message)
 	}
 
-	return c.makeCatCompletions(body)
+	return c.makeCatCompletions(respBody)
 }

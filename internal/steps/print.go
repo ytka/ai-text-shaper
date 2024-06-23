@@ -26,6 +26,7 @@ func GetDiffSize(leftText, rightText string) (bool, int, int) {
 			added += len(diff.Text)
 		case diffmatchpatch.DiffDelete:
 			removed += len(diff.Text)
+		case diffmatchpatch.DiffEqual:
 		}
 	}
 
