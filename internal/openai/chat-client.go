@@ -57,6 +57,7 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
+
 	return resp, nil
 }
 
@@ -85,12 +86,11 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}
-	defer func(body io.ReadCloser) {
-		err := body.Close()
-		if err != nil {
-			fmt.Printf("failed to close response body: %s\n", err)
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil {
+			fmt.Printf("failed to close response body: %s\n", cerr)
 		}
-	}(resp.Body)
+	}()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
