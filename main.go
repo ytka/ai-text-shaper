@@ -1,6 +1,6 @@
 package main
 
-import "ai-text-shaper/cmd"
+import "github/ytka/ai-text-shaper/cmd"
 
 var (
 	// Version is the version of the application.

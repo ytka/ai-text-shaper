@@ -1,15 +1,16 @@
 package cmd
 
 import (
-	"ai-text-shaper/internal/openai"
-	"ai-text-shaper/internal/process"
-	"ai-text-shaper/internal/runner"
-	"ai-text-shaper/internal/tui"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/spf13/cobra"
+	"github/ytka/ai-text-shaper/internal/openai"
+	"github/ytka/ai-text-shaper/internal/process"
+	"github/ytka/ai-text-shaper/internal/runner"
+	"github/ytka/ai-text-shaper/internal/tui"
 )
 
 var (

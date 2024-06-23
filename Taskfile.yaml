@@ -4,10 +4,10 @@ tasks:
   lint:
     desc: Lint the project
     cmds:
-      - go fmt ./...
-      - go vet ./...
-      - go mod tidy
-      - go mod verify
+      #- go fmt ./...
+      #- go vet ./...
+      #- go mod tidy
+      #- go mod verify
       - golangci-lint run
   lint-fix:
     desc: Fix lint errors

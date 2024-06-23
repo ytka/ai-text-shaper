@@ -1,4 +1,6 @@
 linters:
+  #goimports:
+  #  local-prefixes: myproject
   presets:
     - bugs
     - comment
@@ -15,20 +17,3 @@ linters:
     - unused
 run:
   timeout: 5m
-
-issues:
-  exclude-rules:
-    - linters:
-        - govet
-      text: "could not import C"
-
-linters-settings:
-  golint:
-    min-confidence: 0.8
-
-  gofmt:
-    simplify: true
-
-  goimports:
-    local-prefixes: github.com/ytka/ai-text-shaper
-
