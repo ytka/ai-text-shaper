@@ -1,20 +1,27 @@
 package runner
 
 import (
+	"errors" // fixed: Added for defining static errors
 	"fmt"
 	"github/ytka/ai-text-shaper/internal/steps"
 	"log"
 )
 
+var (
+	ErrPromptOrPromptPathRequired = errors.New("either prompt or prompt-path must be provided")
+	ErrOutpathRewriteConflict     = errors.New("outpath and rewrite cannot be provided together")
+	ErrOutpathMultipleFiles       = errors.New("outpath cannot be provided when multiple input files are provided")
+)
+
 func (c *Config) Validate(inputFiles []string) error {
 	if c.Prompt == "" && c.PromptPath == "" {
-		return fmt.Errorf("either prompt or prompt-path must be provided")
+		return ErrPromptOrPromptPathRequired
 	}
 	if c.Outpath != "" && c.Rewrite {
-		return fmt.Errorf("outpath and rewrite cannot be provided together")
+		return ErrOutpathRewriteConflict
 	}
 	if c.Outpath != "" && len(inputFiles) > 1 {
-		return fmt.Errorf("outpath cannot be provided when multiple input files are provided")
+		return ErrOutpathMultipleFiles
 	}
 	return nil
 }
@@ -67,7 +74,7 @@ func (r *Runner) Setup() (*RunOption, error) {
 	r.verboseLog("get prompt")
 	promptText, err := steps.GetPromptText(r.config.Prompt, r.config.PromptPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get prompt text: %w", err)
 	}
 	r.verboseLog("promptText: '%s'", promptText)
 
@@ -86,7 +93,7 @@ func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(string), onAfterPro
 	for i, inputPath := range opt.inputFilePaths {
 		p := NewProcess(r.config, r.confirmFunc)
 		if err := p.Run(i, inputPath, opt, onBeforeProcessing, onAfterProcessing); err != nil {
-			return err
+			return fmt.Errorf("processing error: %w", err)
 		}
 	}
 	return nil
