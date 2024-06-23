@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"ai-text-shaper/internal/openai"
-	"ai-text-shaper/internal/process"
-	"ai-text-shaper/internal/runner"
-	"ai-text-shaper/internal/tui"
 	"fmt"
 	"os"
 	"strings"
 	"sync"
+
+	"ai-text-shaper/internal/openai"
+	"ai-text-shaper/internal/process"
+	"ai-text-shaper/internal/runner"
+	"ai-text-shaper/internal/tui"
 
 	"github.com/spf13/cobra"
 )
@@ -43,13 +44,12 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.Outpath, "outpath", "o", "", "Output file path")
 	rootCmd.Flags().BoolVarP(&c.UseFirstCodeBlock, "use-first-code-block", "f", false, "Use the first code block in the output text")
 	rootCmd.Flags().BoolVarP(&c.Confirm, "confirm", "c", false, "Confirm before writing to file")
-
 }
 
-func Execute(version string, commit string, date string, builtBy string) {
+func Execute(version, commit, date, builtBy string) {
 	rootCmd.Version = fmt.Sprintf("%s, commit %s, built at %s, build by %s", version, commit, date, builtBy)
 	if err := rootCmd.Execute(); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
@@ -84,7 +84,7 @@ func readInputFiles(fileName string) ([]string, error) {
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
 	files := make([]string, 0, len(lines))
 	for _, line := range lines {
-		line := strings.TrimSpace(line)
+		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
@@ -107,7 +107,6 @@ var rootCmd = &cobra.Command{
 			inputFiles = files
 		}
 		return doRun(inputFiles, makeGAIFunc)
-		// return doRunWithStatus(inputFiles, makeGAIFunc)
 	},
 }
 
@@ -140,7 +139,11 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 			go func() {
 				defer wg.Done()
 				if err := statusUI.Run(); err != nil {
-					_, _ = fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
+					_, err := fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
+					if err != nil {
+						fmt.Printf("failed to write error message: %v\n", err)
+						return
+					}
 				}
 			}()
 		}
