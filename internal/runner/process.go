@@ -47,16 +47,14 @@ func (p *Process) Run(i int, inputPath string, opt *RunOption, onBeforeProcessin
 
 	onBeforeProcessing(inputPath)
 	shapeResult := &steps.ShapeResult{}
-	if !p.config.DryRun {
-		result, err := p.getInputAndShape(i+1, inputPath, opt.promptText, opt.gaiClient)
+	shapeResult, err := p.getInputAndShape(inputPath, opt.promptText, opt.gaiClient)
+	if err != nil {
+		onAfterProcessing(inputPath)
 		p.verboseLog("end processing")
-		if err != nil {
-			onAfterProcessing(inputPath)
-			return err
-		}
-		shapeResult = result
+		return err
 	}
 	onAfterProcessing(inputPath)
+	p.verboseLog("end processing: %+v", shapeResult)
 
 	if err := p.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {
 		return err
@@ -64,18 +62,19 @@ func (p *Process) Run(i int, inputPath string, opt *RunOption, onBeforeProcessin
 	return nil
 }
 
-func (p *Process) getInputAndShape(index int, inputFilePath string, promptText string, gai steps.GenerativeAIClient) (*steps.ShapeResult, error) {
-	p.verboseLog("\n")
-	p.verboseLog("[%d] get input text from: %s", index, inputFilePath)
+func (p *Process) getInputAndShape(inputFilePath string, promptText string, gai steps.GenerativeAIClient) (*steps.ShapeResult, error) {
 	inputText, err := steps.GetInputText(inputFilePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get input text")
 	}
-	p.verboseLog("[%d] inputText: '%s'", index, inputText)
 
-	p.verboseLog("[%d] shaping text", index)
 	shaper := steps.NewShaper(gai, p.config.MaxCompletionRepeatCount, p.config.UseFirstCodeBlock, p.config.PromptOptimize)
-	result, err := shaper.ShapeText(inputFilePath, promptText, inputText)
+	prompt := shaper.MakeShapePrompt(inputFilePath, promptText, inputText)
+
+	if p.config.DryRun {
+		return &steps.ShapeResult{Prompt: string(prompt)}, nil
+	}
+	result, err := shaper.Shape(prompt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to shape text")
 	}

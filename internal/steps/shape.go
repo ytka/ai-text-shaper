@@ -14,6 +14,8 @@ type GenerativeAIClient interface {
 	MakeCreateChatCompletion(prompt string) *openai.CreateChatCompletion
 }
 
+type ShapePrompt string
+
 // ShapeResult represents the result of a text shaping operation.
 type ShapeResult struct {
 	Prompt    string
@@ -51,18 +53,16 @@ func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCod
 	}
 }
 
-// ShapeText shapes the text based on the given prompts.
-func (s *Shaper) ShapeText(inputFilePath, promptOrg, inputOrg string) (*ShapeResult, error) {
+func (s *Shaper) MakeShapePrompt(inputFilePath, promptOrg, inputOrg string) ShapePrompt {
 	if inputOrg == "" && !s.promptOptimize {
-		rawResult, err := s.requestCreateChatCompletion(promptOrg)
-		if err != nil {
-			return nil, err
-		}
-		return NewShapeResult(promptOrg, rawResult, rawResult), nil
+		return ShapePrompt(promptOrg)
 	}
+	return ShapePrompt(optimizePrompt(inputFilePath, promptOrg, inputOrg))
+}
 
-	optimized := optimizePrompt(inputFilePath, promptOrg, inputOrg)
-	rawResult, err := s.requestCreateChatCompletion(optimized)
+// Shape shapes the text based on the given prompts.
+func (s *Shaper) Shape(prompt ShapePrompt) (*ShapeResult, error) {
+	rawResult, err := s.requestCreateChatCompletion(string(prompt))
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (s *Shaper) ShapeText(inputFilePath, promptOrg, inputOrg string) (*ShapeRes
 	if err != nil {
 		return nil, err
 	}
-	return NewShapeResult(optimized, rawResult, result), nil
+	return NewShapeResult(string(prompt), rawResult, result), nil
 }
 
 func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
