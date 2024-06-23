@@ -42,7 +42,7 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create new request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apikey))
@@ -54,7 +54,7 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
 	var comp ChatCompletion
 	if err := json.Unmarshal(body, &comp); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 
 	switch c.logLevel {
@@ -88,13 +88,10 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
 	if resp.StatusCode > 299 {
 		var errorResponse ErrorResponse
 		if err := json.Unmarshal(body, &errorResponse); err != nil {
-			return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, body)
+			return nil, fmt.Errorf("unexpected status code: %d %w", resp.StatusCode, fmt.Errorf("%s", body))
 		}
 		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
 	}
