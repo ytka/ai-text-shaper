@@ -67,7 +67,7 @@ func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePa
 
 	if r.config.Confirm {
 		r.verboseLog("[%d] Confirming", index)
-		conf, err := r.confirmFunc("Continue (y/N)?: ")
+		conf, err := r.confirmFunc("Continue (y/n)?: ")
 		if err != nil {
 			return err
 		}

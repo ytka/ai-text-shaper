@@ -40,8 +40,7 @@ tasks:
   auto-commit:
     desc: Commit changes to the repository
     cmds:
-      - git add .
-      - git diff --cached | go run main.go -P=prompts/en/commit-msg.txt | git commit -F -
+      - git diff | go run main.go -P=prompts/en/commit-msg.txt -c -f --outpath=/tmp/commit-msg && git add . && git commit -m "$(cat /tmp/commit-msg)" || echo "Abort"
   auto-commit-cached:
     desc: Commit changes to the repository
     cmds:

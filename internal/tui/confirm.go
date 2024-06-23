@@ -44,9 +44,6 @@ func (m confirmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case tea.KeyEnter:
 			v := strings.ToLower(m.userInput.Value())
-			if v == "" {
-				return m, tea.Quit
-			}
 			if v == "y" || v == "yes" {
 				m.confirmed = true
 				return m, tea.Quit
