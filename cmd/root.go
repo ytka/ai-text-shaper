@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -22,6 +23,10 @@ var (
 		Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 		Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 		RunE: func(_ *cobra.Command, args []string) error {
+			if !checkAPIKeyFileExists() {
+				return errors.New("API key file not found. Please create a file at '" + getAPIKeyFilePath() + "' with your OpenAI API key")
+			}
+
 			inputFiles := args
 			if c.InputFileList != "" {
 				files, err := readInputFiles(c.InputFileList)
@@ -79,18 +84,9 @@ func Execute(version, commit, date, builtBy string) {
 	sb.WriteString(builtBy)
 	rootCmd.Version = sb.String()
 	if err := rootCmd.Execute(); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		//	_, _ = fmt.Fprintln(os.Stderr, err)
+		// os.Exit(1)
 	}
-}
-
-func getAPIKey() (openai.APIKey, error) {
-	apiKeyFilePath := os.Getenv("HOME") + "/.ai-text-shaper-apikey"
-	bytes, err := os.ReadFile(apiKeyFilePath)
-	if err != nil {
-		return "", fmt.Errorf("failed to read API key: %w", err)
-	}
-	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
 }
 
 func makeGAIFunc(model string) (openai.GenerativeAIClient, error) {
