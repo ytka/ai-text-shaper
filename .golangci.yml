@@ -9,9 +9,9 @@ linters:
     - comment
     - complexity
     - error
-    #- format
+    # - format
     #    - import
-    #    - metalinter
+    - metalinter
     #    - module
     #    - performance
     #    - style

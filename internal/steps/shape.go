@@ -14,6 +14,8 @@ type GenerativeAIClient interface {
 	MakeCreateChatCompletion(prompt string) *openai.CreateChatCompletion
 }
 
+var reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
+
 type ShapePrompt string
 
 // ShapeResult represents the result of a text shaping operation.
@@ -66,11 +68,8 @@ func (s *Shaper) Shape(prompt ShapePrompt) (*ShapeResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	result, err := optimizeResponseResult(rawResult, s.useFirstCodeBlock)
-	if err != nil {
-		return nil, err
-	}
-	return NewShapeResult(string(prompt), rawResult, result), nil
+
+	return NewShapeResult(string(prompt), rawResult, optimizeResponseResult(rawResult, s.useFirstCodeBlock)), nil
 }
 
 func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
@@ -111,7 +110,7 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<ai-text-shaper-input>\n%s\n<ai-text-shaper-input>", prompt, supplementation, header, input)
 }
 
-func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, error) {
+func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) string {
 	result := rawResult
 	if strings.HasPrefix(result, "```") && strings.HasSuffix(result, "```") {
 		lines := strings.Split(result, "\n")
@@ -121,25 +120,17 @@ func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, e
 	}
 
 	if useFirstCodeBlock {
-		codeBlock, err := findMarkdownFirstCodeBlock(result)
-		if err != nil {
-			return "", fmt.Errorf("error finding first code block: %w", err)
-		}
-		if codeBlock != "" {
+		if codeBlock := findMarkdownFirstCodeBlock(result); codeBlock != "" {
 			result = codeBlock
 		}
 	}
-	return result, nil
+	return result
 }
 
-func findMarkdownFirstCodeBlock(text string) (string, error) {
-	re, err := regexp.Compile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
-	if err != nil {
-		return "", fmt.Errorf("error compiling regex: %w", err)
-	}
-	match := re.FindStringSubmatch(text)
+func findMarkdownFirstCodeBlock(text string) string {
+	match := reCodeBlock.FindStringSubmatch(text)
 	if match != nil {
-		return match[1], nil
+		return match[1]
 	}
-	return "", nil
+	return ""
 }

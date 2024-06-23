@@ -17,7 +17,7 @@ tasks:
     desc: Fix lint errors
     cmds:
        - golangci-lint run > /tmp/lint.txt || true
-       - echo /tmp/lint.txt
+       - cat /tmp/lint.txt
        - |
          files=$(cat /tmp/lint.txt | awk -F: '/.go:/ {print $1}' | sort | uniq) && cat /tmp/lint.txt | go run main.go --rewrite -P=/tmp/prompt.txt $files
   import-fix:

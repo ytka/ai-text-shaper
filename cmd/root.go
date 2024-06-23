@@ -2,16 +2,16 @@ package cmd
 
 import (
 	"fmt"
-	"github/ytka/ai-text-shaper/internal/ioutil"
-	"github/ytka/ai-text-shaper/internal/steps"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
 
+	"github/ytka/ai-text-shaper/internal/ioutil"
 	"github/ytka/ai-text-shaper/internal/openai"
 	"github/ytka/ai-text-shaper/internal/runner"
+	"github/ytka/ai-text-shaper/internal/steps"
 	"github/ytka/ai-text-shaper/internal/tui"
 )
 
@@ -21,7 +21,7 @@ var (
 		Use:   "ai-text-shaper",
 		Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
 		Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			inputFiles := args
 			if c.InputFileList != "" {
 				files, err := readInputFiles(c.InputFileList)
