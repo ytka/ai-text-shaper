@@ -25,7 +25,7 @@ tasks:
     cmds:
       - |
         shopt -s globstar      
-        go run main.go --rewrite -P=prompts/ja/go/review.txt **/*.go
+        go run main.go --rewrite -P=prompts/ja/go/review-fix.txt **/*.go
   import-fix:
     desc: Fix import errors
     cmds:
