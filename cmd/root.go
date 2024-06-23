@@ -29,6 +29,7 @@ func init() {
 	rootCmd.Flags().IntVar(&c.MaxCompletionRepeatCount, "max-completion-repeat-count", 1, "Max completion repeat count")
 
 	// stdout messages options
+	rootCmd.Flags().BoolVarP(&c.DryRun, "dry-run", "D", false, "Dry run")
 	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
 	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
@@ -139,11 +140,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 			go func() {
 				defer wg.Done()
 				if err := statusUI.Run(); err != nil {
-					_, err := fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
-					if err != nil {
-						fmt.Printf("failed to write error message: %v\n", err)
-						return
-					}
+					fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
 				}
 			}()
 		}

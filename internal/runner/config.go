@@ -11,6 +11,7 @@ type Config struct {
 	MaxTokens                int
 	MaxCompletionRepeatCount int
 
+	DryRun  bool
 	Silent  bool
 	Verbose bool
 	Diff    bool

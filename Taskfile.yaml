@@ -48,7 +48,11 @@ tasks:
   ai-fix-code:
     desc: Fix code with AI
     cmds:
-      - go run main.go --rewrite -P=prompts/ja/fix-go.txt **/*.go
+      - go run main.go --rewrite -P=prompts/ja/fix-go.txt "**/*.go"
+  ai-fix-code-dry:
+    desc: Fix code with AI
+    cmds:
+      - go run main.go --dry-run --rewrite -P=prompts/ja/fix-go.txt "**/*.go"
   auto-commit:
     desc: Commit changes to the repository
     cmds:

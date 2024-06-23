@@ -57,9 +57,19 @@ func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePa
 	r.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(shapeResult.Prompt), shapeResult.Prompt)
 	r.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(shapeResult.RawResult), shapeResult.RawResult)
 	r.verboseLog("[%d] resultText: '%s'", index, shapeResult.Result)
-	if !r.config.Silent {
-		process.OutputToStdout(shapeResult.Result, inputText, r.config.Diff)
+
+	if r.config.Rewrite {
+		fmt.Println("Rewrite file:", inputFilePath)
+	} else {
+		if !r.config.Silent && !r.config.DryRun {
+			process.OutputToStdout(shapeResult.Result, inputText, r.config.Diff)
+		}
 	}
+
+	if r.config.DryRun {
+		return nil
+	}
+
 	outpath := r.config.Outpath
 	if r.config.Rewrite {
 		outpath = inputFilePath
@@ -123,11 +133,15 @@ func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(), onAfterProcessin
 		r.verboseLog("start processing")
 
 		onBeforeProcessing()
-		shapeResult, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
-		r.verboseLog("end processing")
-		if err != nil {
-			onAfterProcessing()
-			return err
+		shapeResult := &process.ShapeResult{}
+		if !r.config.DryRun {
+			result, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
+			r.verboseLog("end processing")
+			if err != nil {
+				onAfterProcessing()
+				return err
+			}
+			shapeResult = result
 		}
 		onAfterProcessing()
 
