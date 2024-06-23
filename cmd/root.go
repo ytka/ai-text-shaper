@@ -19,7 +19,7 @@ var (
 	c       runner.Config
 	rootCmd = &cobra.Command{
 		Use:   "ai-text-shaper",
-		Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
+		Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 		Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
 		RunE: func(_ *cobra.Command, args []string) error {
 			inputFiles := args

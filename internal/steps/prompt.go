@@ -6,8 +6,10 @@ import (
 	"os"
 )
 
+// ErrPromptRequired is exported and uses CamelCase.
 var ErrPromptRequired = errors.New("prompt is required")
 
+// GetPromptText retrieves the prompt text from the specified source.
 func GetPromptText(prompt, promptPath string) (string, error) {
 	if prompt == "" && promptPath == "" {
 		return "", ErrPromptRequired

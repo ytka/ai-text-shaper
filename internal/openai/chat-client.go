@@ -44,8 +44,8 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 		fmt.Printf("createChatCompletion: %s\n", requestBody)
 	}
 
-	cnt := context.Background()
-	req, err := http.NewRequestWithContext(cnt, "POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
+	ctx := context.Background()
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new request: %w", err)
 	}
@@ -77,7 +77,6 @@ func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
 	case "debug":
 		fmt.Printf("responseBody: %s\n", body)
 	}
-
 	return &comp, nil
 }
 
