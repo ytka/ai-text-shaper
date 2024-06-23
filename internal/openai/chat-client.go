@@ -21,6 +21,8 @@ type ChatClient struct {
 	maxTokens *int
 }
 
+var _ GenerativeAIClient = (*ChatClient)(nil)
+
 // New creates a new ChatClient instance.
 func New(apikey APIKey, model, logLevel string, maxTokens *int) *ChatClient {
 	return &ChatClient{
@@ -37,7 +39,7 @@ func (c *ChatClient) MakeCreateChatCompletion(prompt string) *CreateChatCompleti
 }
 
 // sendChatCompletionsRequest sends a request to the chat completions endpoint.
-func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*http.Response, error) {
+func (c *ChatClient) sendChatCompletionsRequest(ctx context.Context, ccc *CreateChatCompletion) (*http.Response, error) {
 	requestBody, err := json.Marshal(ccc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
@@ -49,8 +51,6 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 		fmt.Printf("createChatCompletion: %s\n", requestBody)
 	}
 
-	// fix-me:
-	ctx := context.Background()
 	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new request: %w", err)
@@ -88,8 +88,8 @@ func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
 }
 
 // RequestCreateChatCompletion requests the AI to create chat completion based on the given prompt.
-func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*ChatCompletion, error) {
-	resp, err := c.sendChatCompletionsRequest(ccc)
+func (c *ChatClient) RequestCreateChatCompletion(ctx context.Context, ccc *CreateChatCompletion) (*ChatCompletion, error) {
+	resp, err := c.sendChatCompletionsRequest(ctx, ccc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute request: %w", err)
 	}

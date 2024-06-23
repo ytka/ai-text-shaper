@@ -1,8 +1,10 @@
 package runner
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/ytka/ai-text-shaper/internal/openai"
 	"log"
 	"os"
 
@@ -39,7 +41,7 @@ type Runner struct {
 }
 
 type (
-	GenerativeAIHandlerFactoryFunc func(model string) (steps.GenerativeAIClient, error)
+	GenerativeAIHandlerFactoryFunc func(model string) (openai.GenerativeAIClient, error)
 	ConfirmFunc                    func(string) (bool, error)
 )
 
@@ -62,7 +64,7 @@ func (r *Runner) verboseLog(msg string, args ...interface{}) {
 
 // RunOption holds options for running the Runner.
 type RunOption struct {
-	gaiClient      steps.GenerativeAIClient
+	gaiClient      openai.GenerativeAIClient
 	promptText     string
 	inputFilePaths []string
 }
@@ -107,10 +109,10 @@ func (r *Runner) Setup() (*RunOption, error) {
 }
 
 // Run processing of multiple input files.
-func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
+func (r *Runner) Run(ctx context.Context, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
 	for i, inputPath := range opt.inputFilePaths {
 		p := NewProcess(r.config, r.confirmFunc)
-		if err := p.Run(i, inputPath, opt, onBeforeProcessing, onAfterProcessing); err != nil {
+		if err := p.Run(ctx, i, inputPath, opt, onBeforeProcessing, onAfterProcessing); err != nil {
 			return fmt.Errorf("processing error: %w", err)
 		}
 	}

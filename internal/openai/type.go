@@ -1,6 +1,14 @@
 package openai
 
+import "context"
+
 type APIKey string
+
+// GenerativeAIClient represents an interface for generating AI client operations.
+type GenerativeAIClient interface {
+	RequestCreateChatCompletion(context.Context, *CreateChatCompletion) (*ChatCompletion, error)
+	MakeCreateChatCompletion(string) *CreateChatCompletion
+}
 
 type ChatMessage struct {
 	Role    string `json:"role"`

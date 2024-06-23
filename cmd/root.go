@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -11,7 +12,6 @@ import (
 	"github.com/ytka/ai-text-shaper/internal/ioutil"
 	"github.com/ytka/ai-text-shaper/internal/openai"
 	"github.com/ytka/ai-text-shaper/internal/runner"
-	"github.com/ytka/ai-text-shaper/internal/steps"
 	"github.com/ytka/ai-text-shaper/internal/tui"
 )
 
@@ -30,7 +30,8 @@ var (
 				}
 				inputFiles = files
 			}
-			return doRun(inputFiles, makeGAIFunc)
+			ctx := context.Background()
+			return doRun(ctx, inputFiles, makeGAIFunc)
 		},
 	}
 )
@@ -92,7 +93,7 @@ func getAPIKey() (openai.APIKey, error) {
 	return openai.APIKey(strings.TrimSuffix(string(bytes), "\n")), nil
 }
 
-func makeGAIFunc(model string) (steps.GenerativeAIClient, error) {
+func makeGAIFunc(model string) (openai.GenerativeAIClient, error) {
 	apikey, err := getAPIKey()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get API key: %w", err)
@@ -122,7 +123,7 @@ func readInputFiles(fileName string) ([]string, error) {
 	return files, nil
 }
 
-func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.GenerativeAIClient, error)) error {
+func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model string) (openai.GenerativeAIClient, error)) error {
 	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
 	ropt, err := r.Setup()
 	if err != nil {
@@ -162,7 +163,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (steps.Generative
 		}
 	}
 
-	if err := r.Run(ropt, onBeforeProcessing, onAfterProcessing); err != nil {
+	if err := r.Run(ctx, ropt, onBeforeProcessing, onAfterProcessing); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
 	return nil

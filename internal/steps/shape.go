@@ -1,18 +1,13 @@
 package steps
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/ytka/ai-text-shaper/internal/openai"
 )
-
-// GenerativeAIClient represents an interface for generating AI client operations.
-type GenerativeAIClient interface {
-	RequestCreateChatCompletion(*openai.CreateChatCompletion) (*openai.ChatCompletion, error)
-	MakeCreateChatCompletion(prompt string) *openai.CreateChatCompletion
-}
 
 // reCodeBlock is a regular expression to find code blocks in markdown.
 var reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
@@ -40,14 +35,14 @@ func NewShapeResult(prompt, rawResult, result string) *ShapeResult {
 
 // Shaper is responsible for shaping the text by interacting with GenerativeAIClient.
 type Shaper struct {
-	gai                      GenerativeAIClient
+	gai                      openai.GenerativeAIClient
 	maxCompletionRepeatCount int
 	useFirstCodeBlock        bool
 	promptOptimize           bool
 }
 
 // NewShaper creates a new Shaper.
-func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock, promptOptimize bool) *Shaper {
+func NewShaper(gai openai.GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock, promptOptimize bool) *Shaper {
 	return &Shaper{
 		gai:                      gai,
 		maxCompletionRepeatCount: maxCompletionRepeatCount,
@@ -65,8 +60,8 @@ func (s *Shaper) MakeShapePrompt(inputFilePath, promptOrg, inputOrg string) Shap
 }
 
 // Shape shapes the text based on the given prompts.
-func (s *Shaper) Shape(prompt ShapePrompt) (*ShapeResult, error) {
-	rawResult, err := s.requestCreateChatCompletion(string(prompt))
+func (s *Shaper) Shape(ctx context.Context, prompt ShapePrompt) (*ShapeResult, error) {
+	rawResult, err := s.requestCreateChatCompletion(ctx, string(prompt))
 	if err != nil {
 		return nil, err
 	}
@@ -75,12 +70,12 @@ func (s *Shaper) Shape(prompt ShapePrompt) (*ShapeResult, error) {
 }
 
 // requestCreateChatCompletion requests the AI to create chat completion based on the given prompt.
-func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
+func (s *Shaper) requestCreateChatCompletion(ctx context.Context, prompt string) (string, error) {
 	var result string
 	cr := s.gai.MakeCreateChatCompletion(prompt)
 	maxCount := 1
 	for i := 0; i < maxCount; i++ {
-		comp, err := s.gai.RequestCreateChatCompletion(cr)
+		comp, err := s.gai.RequestCreateChatCompletion(ctx, cr)
 		if err != nil {
 			return "", fmt.Errorf("failed to send chat message: %w", err)
 		}

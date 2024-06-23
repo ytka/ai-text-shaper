@@ -1,8 +1,10 @@
 package runner
 
 import (
+	"context"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/ytka/ai-text-shaper/internal/openai"
 	"github.com/ytka/ai-text-shaper/internal/steps"
 	"log"
 	"os"
@@ -42,10 +44,10 @@ func (p *Process) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
-func (p *Process) Run(i int, inputPath string, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
+func (p *Process) Run(ctx context.Context, i int, inputPath string, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
 	p.verboseLog("start processing")
 	onBeforeProcessing(inputPath)
-	shapeResult, err := p.getInputAndShape(inputPath, opt.promptText, opt.gaiClient)
+	shapeResult, err := p.getInputAndShape(ctx, inputPath, opt.promptText, opt.gaiClient)
 	if err != nil {
 		onAfterProcessing(inputPath)
 		p.verboseLog("end processing")
@@ -60,7 +62,7 @@ func (p *Process) Run(i int, inputPath string, opt *RunOption, onBeforeProcessin
 	return nil
 }
 
-func (p *Process) getInputAndShape(inputFilePath string, promptText string, gai steps.GenerativeAIClient) (*steps.ShapeResult, error) {
+func (p *Process) getInputAndShape(ctx context.Context, inputFilePath string, promptText string, gai openai.GenerativeAIClient) (*steps.ShapeResult, error) {
 	inputText, err := steps.GetInputText(inputFilePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get input text")
@@ -72,7 +74,7 @@ func (p *Process) getInputAndShape(inputFilePath string, promptText string, gai 
 	if p.config.DryRun {
 		return &steps.ShapeResult{Prompt: string(prompt)}, nil
 	}
-	result, err := shaper.Shape(prompt)
+	result, err := shaper.Shape(ctx, prompt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to shape text")
 	}
