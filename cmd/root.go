@@ -88,7 +88,7 @@ func makeGAIFunc(model string) (process.GenerativeAIClient, error) {
 func readInputFiles(fileName string) ([]string, error) {
 	data, err := os.ReadFile(fileName)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read input files from %s: %w", fileName, err)
 	}
 
 	lines := strings.Split(strings.TrimSpace(string(data)), "\n")
@@ -120,13 +120,13 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func isPipe(file *os.File) bool {
+func isPipe(file *os.File) (bool, error) {
 	fileInfo, err := file.Stat()
 	if err != nil {
-		return false
+		return false, fmt.Errorf("failed to get file info: %w", err)
 	}
 	// Checks if the mode is pipe
-	return (fileInfo.Mode() & os.ModeNamedPipe) != 0
+	return (fileInfo.Mode() & os.ModeNamedPipe) != 0, nil
 }
 
 func doRun(inputFiles []string, makeGAIFunc func(model string) (process.GenerativeAIClient, error)) error {
@@ -139,7 +139,12 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 	onBeforeProcessing := func(string) {}
 	onAfterProcessing := func(string) {}
 
-	if !isPipe(os.Stdout) {
+	pipe, err := isPipe(os.Stdin)
+	if err != nil {
+		return fmt.Errorf("failed to check if stdin is pipe: %w", err)
+	}
+
+	if !pipe {
 		var wg sync.WaitGroup
 		var statusUI *tui.StatusUI
 		onBeforeProcessing = func(inpath string) {
