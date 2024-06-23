@@ -1,1 +1,1 @@
-GoコードをGoogle Style Guide (https://google.github.io/styleguide/)に基づき修正すべき箇所についてのみ、修正内容と理由をコメントアウトしてコードに挿入して返して。
+GoコードをGoogle Style Guide (https://google.github.io/styleguide/)に基づき修正すべき箇所についてのみ、修正内容と理由(根拠となるURLがあればそれも含めて)をコメントアウトしてコードに挿入して返して。

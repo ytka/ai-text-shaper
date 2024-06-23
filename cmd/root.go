@@ -49,9 +49,17 @@ func init() {
 }
 
 func Execute(version, commit, date, builtBy string) {
-	rootCmd.Version = fmt.Sprintf("%s, commit %s, built at %s, build by %s", version, commit, date, builtBy)
+	var sb strings.Builder
+	sb.WriteString(version)
+	sb.WriteString(", commit ")
+	sb.WriteString(commit)
+	sb.WriteString(", built at ")
+	sb.WriteString(date)
+	sb.WriteString(", build by ")
+	sb.WriteString(builtBy)
+	rootCmd.Version = sb.String()
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		_, _ = fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
