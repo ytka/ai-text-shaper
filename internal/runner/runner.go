@@ -124,14 +124,12 @@ func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(), onAfterProcessin
 
 		onBeforeProcessing()
 		shapeResult, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
-		if err != nil {
-			return err
-		}
 		r.verboseLog("end processing")
-		onAfterProcessing()
 		if err != nil {
+			onAfterProcessing()
 			return err
 		}
+		onAfterProcessing()
 
 		if err := r.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {
 			return err
