@@ -126,7 +126,7 @@ func (p *Process) output(shapeResult *steps.ShapeResult, index int, inputFilePat
 	}
 
 	outpath := p.config.Outpath
-	if p.config.Rewrite {
+	if p.config.Rewrite && inputFilePath != "-" {
 		outpath = inputFilePath
 	}
 	return p.write(index, shapeResult.Result, outpath)
