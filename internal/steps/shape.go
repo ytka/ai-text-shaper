@@ -106,9 +106,9 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 	supplementation := strings.Join(supplements, " ")
 	header := ""
 	if inputFilePath != "" && inputFilePath != "-" {
-		header = fmt.Sprintf("filepath=\"%s\"", inputFilePath)
+		header = fmt.Sprintf("filepath=\"%s\"\n", inputFilePath)
 	}
-	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n<ai-text-shaper-input %s>\n%s\n<ai-text-shaper-input>", prompt, supplementation, header, input)
+	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<ai-text-shaper-input>\n%s\n<ai-text-shaper-input>", prompt, supplementation, header, input)
 }
 
 func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, error) {
