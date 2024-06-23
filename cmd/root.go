@@ -6,10 +6,11 @@ import (
 	"ai-text-shaper/internal/runner"
 	"ai-text-shaper/internal/tui"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/spf13/cobra"
 )
 
 var c runner.Config
@@ -139,7 +140,7 @@ func doRun(inputFiles []string, makeGAIFunc func(model string) (process.Generati
 			go func() {
 				defer wg.Done()
 				if err := statusUI.Run(); err != nil {
-					// errChan <- err
+					_, _ = fmt.Fprintf(os.Stderr, "failed to run status UI: %v\n", err)
 				}
 			}()
 		}

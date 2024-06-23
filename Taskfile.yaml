@@ -1,6 +1,18 @@
 version: '3'
 
 tasks:
+  lint:
+    desc: Lint the project
+    cmds:
+      - go fmt ./...
+      - go vet ./...
+      - go mod tidy
+      - go mod verify
+      - golangci-lint run
+  lint-fix:
+    desc: Fix lint errors
+    cmds:
+      - golangci-lint run --fix
   build:
     desc: Build the project
     vars:

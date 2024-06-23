@@ -121,11 +121,14 @@ func (r *Runner) Setup() (*RunOption, error) {
 func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(), onAfterProcessing func()) error {
 	for i, inputPath := range opt.inputFilePaths {
 		r.verboseLog("start processing")
+
 		onBeforeProcessing()
 		shapeResult, err := r.process(i+1, inputPath, opt.promptText, opt.gaiClient)
+		if err != nil {
+			return err
+		}
 		r.verboseLog("end processing")
 		onAfterProcessing()
-
 		if err != nil {
 			return err
 		}
