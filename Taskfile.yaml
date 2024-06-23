@@ -25,7 +25,7 @@ tasks:
     desc: Review the project
     cmds:
       - |
-        changed=$(git diff --name-only @{push} | grep '.go$|.yaml|.yml|.md' | tr '\n' ' ') && go run main.go --rewrite -p="以下のファイルをレビューし、重要な問題があれば修正して。" $changed
+        changed=$(git diff --name-only @{push} | grep -E '.go$|.yaml|.yml|.md' | tr '\n' ' ') && go run main.go --rewrite -p="以下のファイルをレビューし、重要な問題があれば修正して。" $changed
   auto-review:
     desc: Review the project
     cmds:
