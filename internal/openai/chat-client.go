@@ -3,10 +3,13 @@ package openai
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 )
+
+var ErrUnexpectedStatusCode = errors.New("unexpected status code")
 
 type ChatClient struct {
 	apikey    APIKey
@@ -48,7 +51,11 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apikey))
 
 	client := &http.Client{}
-	return client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("request failed: %w", err)
+	}
+	return resp, nil
 }
 
 func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
@@ -91,9 +98,9 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	if resp.StatusCode > 299 {
 		var errorResponse ErrorResponse
 		if err := json.Unmarshal(body, &errorResponse); err != nil {
-			return nil, fmt.Errorf("unexpected status code: %d %w", resp.StatusCode, fmt.Errorf("%s", body))
+			return nil, fmt.Errorf("failed to unmarshal error response: %w", err)
 		}
-		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
+		return nil, fmt.Errorf("%w: %d '%s'", ErrUnexpectedStatusCode, resp.StatusCode, errorResponse.Error.Message)
 	}
 
 	return c.makeCatCompletions(body)
