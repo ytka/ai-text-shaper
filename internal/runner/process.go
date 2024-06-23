@@ -94,6 +94,23 @@ func (p *Process) confirm(index int, inputFilePath string) error {
 	return nil
 }
 
+func (p *Process) write(index int, resultText string, outpath string) error {
+	if p.config.Rewrite {
+		if p.config.DryRun {
+			fmt.Printf("Rewrite file:%s, dry-run skipped.\n", outpath)
+		} else {
+			fmt.Printf("Rewrite file:%s\n", outpath)
+		}
+	}
+	if outpath != "" && !p.config.DryRun {
+		p.verboseLog("[%d] Writing to file: %s", index, outpath)
+		if err := steps.WriteResult(resultText, outpath); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (p *Process) output(shapeResult *steps.ShapeResult, index int, inputFilePath string, inputText string) error {
 	p.verboseLog("[%d] mergedPromptText: size:%d, '%s'", index, len(shapeResult.Prompt), shapeResult.Prompt)
 	p.verboseLog("[%d] rawResult: size:%d, '%s'", index, len(shapeResult.RawResult), shapeResult.RawResult)
@@ -113,20 +130,5 @@ func (p *Process) output(shapeResult *steps.ShapeResult, index int, inputFilePat
 	if p.config.Rewrite {
 		outpath = inputFilePath
 	}
-	if outpath != "" && !p.config.DryRun {
-		p.verboseLog("[%d] Writing to file: %s", index, outpath)
-		if err := steps.WriteResult(shapeResult.Result, outpath); err != nil {
-			return err
-		}
-	}
-	if p.config.Rewrite {
-		if p.config.DryRun {
-			fmt.Printf("Rewrite file:%s, dry-run skipped.\n", inputFilePath)
-		} else {
-			isDiff, added, removed := steps.GetDiffSize(inputText, shapeResult.Result)
-			fmt.Printf("Rewrite file:%s, changed:=%v added:%d, removed:%d\n", inputFilePath, isDiff, added, removed)
-		}
-	}
-
-	return nil
+	return p.write(index, shapeResult.Result, outpath)
 }
