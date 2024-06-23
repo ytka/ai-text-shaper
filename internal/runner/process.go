@@ -75,7 +75,7 @@ func (p *Process) getInputAndShape(index int, inputFilePath string, promptText s
 
 	p.verboseLog("[%d] shaping text", index)
 	shaper := steps.NewShaper(gai, p.config.MaxCompletionRepeatCount, p.config.UseFirstCodeBlock, p.config.PromptOptimize)
-	result, err := shaper.ShapeText(promptText, inputText)
+	result, err := shaper.ShapeText(inputFilePath, promptText, inputText)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to shape text")
 	}

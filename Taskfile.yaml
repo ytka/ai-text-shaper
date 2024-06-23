@@ -13,6 +13,10 @@ tasks:
     desc: Fix lint errors
     cmds:
       - golangci-lint run --fix
+  lint-fix-ai:
+    desc: Fix lint errors
+    cmds:
+      - golangci-lint run --fix > /tmp/lint-fix-ai.txt
   import-fix:
     desc: Fix import errors
     cmds:

@@ -52,7 +52,7 @@ func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCod
 }
 
 // ShapeText shapes the text based on the given prompts.
-func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
+func (s *Shaper) ShapeText(inputFilePath, promptOrg, inputOrg string) (*ShapeResult, error) {
 	if inputOrg == "" && !s.promptOptimize {
 		rawResult, err := s.requestCreateChatCompletion(promptOrg)
 		if err != nil {
@@ -61,7 +61,7 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 		return NewShapeResult(promptOrg, rawResult, rawResult), nil
 	}
 
-	optimized := optimizePrompt(promptOrg, inputOrg)
+	optimized := optimizePrompt(inputFilePath, promptOrg, inputOrg)
 	rawResult, err := s.requestCreateChatCompletion(optimized)
 	if err != nil {
 		return nil, err
@@ -97,14 +97,18 @@ func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 	return result, nil
 }
 
-func optimizePrompt(prompt, input string) string {
+func optimizePrompt(inputFilePath, prompt, input string) string {
 	supplements := []string{
 		"The subject of the Instruction is the area enclosed by the ai-text-shaper-input tag.",
 		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
 		"Only results should be returned and no explanation or supplementary information is required, but additional explanation or details should be provided if explicitly requested in the instructions.",
 	}
 	supplementation := strings.Join(supplements, " ")
-	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n<ai-text-shaper-input>%s</ai-text-shaper-input>", prompt, supplementation, input)
+	header := ""
+	if inputFilePath != "" && inputFilePath != "-" {
+		header = fmt.Sprintf("----%s----\n", inputFilePath)
+	}
+	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<ai-text-shaper-input>\n%s\n</ai-text-shaper-input>", prompt, supplementation, header, input)
 }
 
 func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, error) {
