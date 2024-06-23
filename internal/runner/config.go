@@ -3,8 +3,9 @@ package runner
 import "fmt"
 
 type Config struct {
-	Prompt     string
-	PromptPath string
+	Prompt         string
+	PromptPath     string
+	PromptOptimize bool
 
 	Model                    string
 	MaxTokens                int

@@ -45,7 +45,7 @@ func (r *Runner) process(index int, inputFilePath string, promptText string, gai
 		Shape
 	*/
 	r.verboseLog("[%d] shaping text", index)
-	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock)
+	s := process.NewShaper(gai, r.config.MaxCompletionRepeatCount, r.config.UseFirstCodeBlock, r.config.PromptOptimize)
 	result, err := s.ShapeText(promptText, inputText)
 	if err != nil {
 		return nil, err

@@ -19,6 +19,7 @@ func init() {
 	// prompt options
 	rootCmd.Flags().StringVarP(&c.Prompt, "prompt", "p", "", "Prompt text")
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
+	rootCmd.Flags().BoolVarP(&c.PromptOptimize, "prompt-optimize", "O", true, "Optimize prompt text")
 
 	// model options
 	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "statusModel to use for text generation")

@@ -29,14 +29,15 @@ type Shaper struct {
 	gai                      GenerativeAIClient
 	maxCompletionRepeatCount int
 	useFirstCodeBlock        bool
+	promptOptimize           bool
 }
 
-func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock bool) *Shaper {
-	return &Shaper{gai: gai, maxCompletionRepeatCount: maxCompletionRepeatCount, useFirstCodeBlock: useFirstCodeBlock}
+func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock bool, promptOptimize bool) *Shaper {
+	return &Shaper{gai: gai, maxCompletionRepeatCount: maxCompletionRepeatCount, useFirstCodeBlock: useFirstCodeBlock, promptOptimize: promptOptimize}
 }
 
 func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
-	if inputOrg == "" {
+	if inputOrg == "" && !s.promptOptimize {
 		rawResult, err := s.requestCreateChatCompletion(promptOrg)
 		if err != nil {
 			return nil, err
