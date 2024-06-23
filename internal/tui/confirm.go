@@ -7,6 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/pkg/errors"
 )
 
 // Confirm prompts the user with a message and waits for a confirmation.
@@ -15,7 +16,7 @@ func Confirm(message string) (bool, error) {
 
 	fM, err := tea.NewProgram(m).Run()
 	if err != nil {
-		return false, err
+		return false, errors.Wrap(err, "failed to run the confirmation program")
 	}
 	return fM.(confirmModel).confirmed, nil
 }

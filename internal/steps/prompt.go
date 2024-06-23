@@ -1,13 +1,16 @@
 package steps
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
 
+var ErrPromptRequired = errors.New("prompt is required")
+
 func GetPromptText(prompt, promptPath string) (string, error) {
 	if prompt == "" && promptPath == "" {
-		return "", fmt.Errorf("prompt is required")
+		return "", ErrPromptRequired
 	}
 
 	if prompt == "" && promptPath != "" {

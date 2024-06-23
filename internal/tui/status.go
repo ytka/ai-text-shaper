@@ -28,7 +28,10 @@ func NewStatusUI(initialMessage string) *StatusUI {
 
 func (s *StatusUI) Run() error {
 	_, err := s.program.Run()
-	return err
+	if err != nil {
+		return fmt.Errorf("failed to run program: %w", err)
+	}
+	return nil
 }
 
 func (s *StatusUI) Quit() {
@@ -98,7 +101,7 @@ func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m statusModel) View() string {
 	if m.err != nil {
-		return m.err.Error()
+		return fmt.Errorf("model error: %w", m.err).Error()
 	}
 	str := fmt.Sprintf("%s %s", m.spinner.View(), m.statusText)
 	if m.quitting {
