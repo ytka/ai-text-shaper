@@ -79,6 +79,9 @@ func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		return m, cmd
+	case error:
+		m.err = msg
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
@@ -87,11 +90,6 @@ func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		default:
 			return m, nil
 		}
-
-	case error:
-		m.err = msg
-		return m, nil
-
 	default:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -101,7 +99,7 @@ func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m statusModel) View() string {
 	if m.err != nil {
-		return fmt.Errorf("model error: %w", m.err).Error()
+		return fmt.Sprintf("model error: %v", m.err) // fixed: use fmt.Sprintf instead of fmt.Errorf for simple strings in View method
 	}
 	str := fmt.Sprintf("%s %s", m.spinner.View(), m.statusText)
 	if m.quitting {

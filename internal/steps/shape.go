@@ -14,6 +14,7 @@ type GenerativeAIClient interface {
 	MakeCreateChatCompletion(prompt string) *openai.CreateChatCompletion
 }
 
+// reCodeBlock is a regular expression to find code blocks in markdown.
 var reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
 
 type ShapePrompt string
@@ -55,6 +56,7 @@ func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCod
 	}
 }
 
+// MakeShapePrompt generates a ShapePrompt based on input parameters.
 func (s *Shaper) MakeShapePrompt(inputFilePath, promptOrg, inputOrg string) ShapePrompt {
 	if inputOrg == "" && !s.promptOptimize {
 		return ShapePrompt(promptOrg)
@@ -72,6 +74,7 @@ func (s *Shaper) Shape(prompt ShapePrompt) (*ShapeResult, error) {
 	return NewShapeResult(string(prompt), rawResult, optimizeResponseResult(rawResult, s.useFirstCodeBlock)), nil
 }
 
+// requestCreateChatCompletion requests the AI to create chat completion based on the given prompt.
 func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 	var result string
 	cr := s.gai.MakeCreateChatCompletion(prompt)
@@ -96,6 +99,7 @@ func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 	return result, nil
 }
 
+// optimizePrompt refines the prompt by incorporating additional information.
 func optimizePrompt(inputFilePath, prompt, input string) string {
 	supplements := []string{
 		"The subject of the Instruction is the area enclosed by the ai-text-shaper-input tag.",
@@ -110,6 +114,7 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<ai-text-shaper-input>\n%s\n<ai-text-shaper-input>", prompt, supplementation, header, input)
 }
 
+// optimizeResponseResult refines the AI's response, potentially extracting code blocks.
 func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) string {
 	result := rawResult
 	if strings.HasPrefix(result, "```") && strings.HasSuffix(result, "```") {
@@ -127,6 +132,7 @@ func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) string {
 	return result
 }
 
+// findMarkdownFirstCodeBlock extracts the first code block found in text.
 func findMarkdownFirstCodeBlock(text string) string {
 	match := reCodeBlock.FindStringSubmatch(text)
 	if match != nil {

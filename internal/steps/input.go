@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// getInputFromStdin reads all input from stdin if not connected to a tty.
 func getInputFromStdin() (string, error) {
 	stat, err := os.Stdin.Stat()
 	if err != nil {
@@ -22,7 +23,8 @@ func getInputFromStdin() (string, error) {
 	return string(input), nil
 }
 
-func GetInputText(inputFilePath string) (string, error) {
+// GetInputText reads text from a file specified by inputFilePath or from stdin if the path is "-".
+func GetInputText(inputFilePath string) (string, error) { // fixed: Function name should follow MixedCaps style - https://google.github.io/styleguide/go/guide.html#mixed-caps
 	if inputFilePath == "-" {
 		return getInputFromStdin()
 	}

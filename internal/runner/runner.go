@@ -1,12 +1,13 @@
 package runner
 
 import (
-	"errors" // fixed: Added for defining static errors
+	"errors"
 	"fmt"
-	"github.com/ytka/ai-text-shaper/internal/ioutil"
-	"github.com/ytka/ai-text-shaper/internal/steps"
 	"log"
 	"os"
+
+	"github.com/ytka/ai-text-shaper/internal/ioutil"
+	"github.com/ytka/ai-text-shaper/internal/steps"
 )
 
 var (
@@ -15,6 +16,7 @@ var (
 	ErrOutpathMultipleFiles       = errors.New("outpath cannot be provided when multiple input files are provided")
 )
 
+// Validate checks the configuration for errors.
 func (c *Config) Validate(inputFiles []string) error {
 	if c.Prompt == "" && c.PromptPath == "" {
 		return ErrPromptOrPromptPathRequired
@@ -41,6 +43,7 @@ type (
 	ConfirmFunc                    func(string) (bool, error)
 )
 
+// New creates a new Runner instance.
 func New(config *Config, inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFunc) *Runner {
 	return &Runner{
 		config:                         config,
@@ -50,18 +53,21 @@ func New(config *Config, inputFiles []string, gaiFactory GenerativeAIHandlerFact
 	}
 }
 
+// verboseLog logs a message if verbose mode is enabled.
 func (r *Runner) verboseLog(msg string, args ...interface{}) {
 	if r.config.Verbose {
 		log.Printf(msg, args...)
 	}
 }
 
+// RunOption holds options for running the Runner.
 type RunOption struct {
 	gaiClient      steps.GenerativeAIClient
 	promptText     string
 	inputFilePaths []string
 }
 
+// Setup initializes the Runner and returns a RunOption.
 func (r *Runner) Setup() (*RunOption, error) {
 	r.verboseLog("configs: %+v", r.config)
 	r.verboseLog("inputFiles: %+v", r.inputFiles)

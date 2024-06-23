@@ -10,8 +10,10 @@ import (
 	"net/http"
 )
 
+// ErrUnexpectedStatusCode is an error for unexpected status code.
 var ErrUnexpectedStatusCode = errors.New("unexpected status code")
 
+// ChatClient represents an interface for chat client operations.
 type ChatClient struct {
 	apikey    APIKey
 	model     string
@@ -19,6 +21,7 @@ type ChatClient struct {
 	maxTokens *int
 }
 
+// New creates a new ChatClient instance.
 func New(apikey APIKey, model, logLevel string, maxTokens *int) *ChatClient {
 	return &ChatClient{
 		apikey:    apikey,
@@ -28,10 +31,12 @@ func New(apikey APIKey, model, logLevel string, maxTokens *int) *ChatClient {
 	}
 }
 
+// MakeCreateChatCompletion creates a new CreateChatCompletion.
 func (c *ChatClient) MakeCreateChatCompletion(prompt string) *CreateChatCompletion {
 	return newCreateChatCompletion(c.model, prompt, c.maxTokens, false)
 }
 
+// sendChatCompletionsRequest sends a request to the chat completions endpoint.
 func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*http.Response, error) {
 	requestBody, err := json.Marshal(ccc)
 	if err != nil {
@@ -44,6 +49,7 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 		fmt.Printf("createChatCompletion: %s\n", requestBody)
 	}
 
+	// fix-me:
 	ctx := context.Background()
 	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -61,6 +67,7 @@ func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*htt
 	return resp, nil
 }
 
+// makeCatCompletions creates a new ChatCompletion.
 func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
 	var comp ChatCompletion
 	if err := json.Unmarshal(body, &comp); err != nil {
@@ -80,6 +87,7 @@ func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
 	return &comp, nil
 }
 
+// RequestCreateChatCompletion requests the AI to create chat completion based on the given prompt.
 func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*ChatCompletion, error) {
 	resp, err := c.sendChatCompletionsRequest(ccc)
 	if err != nil {

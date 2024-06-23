@@ -6,6 +6,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
+// diff returns a formatted string showing the differences between leftText and rightText.
 func diff(leftText, rightText string) string {
 	dmp := diffmatchpatch.New()
 	a, b, c := dmp.DiffLinesToChars(leftText, rightText)
@@ -14,6 +15,7 @@ func diff(leftText, rightText string) string {
 	return dmp.DiffPrettyText(diffs)
 }
 
+// GetDiffSize returns a boolean indicating if there are any differences and the number of characters added and removed.
 func GetDiffSize(leftText, rightText string) (bool, int, int) {
 	dmp := diffmatchpatch.New()
 	diffs := dmp.DiffMain(leftText, rightText, false)
@@ -27,12 +29,14 @@ func GetDiffSize(leftText, rightText string) (bool, int, int) {
 		case diffmatchpatch.DiffDelete:
 			removed += len(diff.Text)
 		case diffmatchpatch.DiffEqual:
+			// No changes needed for equal parts
 		}
 	}
 
 	return added > 0 || removed > 0, added, removed
 }
 
+// Print outputs the provided outputText to the console. If useDiff is true, it also prints the differences between inputText and outputText.
 func Print(outputText, inputText string, useDiff bool) {
 	fmt.Print(outputText)
 

@@ -44,7 +44,6 @@ func (p *Process) verboseLog(msg string, args ...interface{}) {
 
 func (p *Process) Run(i int, inputPath string, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
 	p.verboseLog("start processing")
-
 	onBeforeProcessing(inputPath)
 	shapeResult, err := p.getInputAndShape(inputPath, opt.promptText, opt.gaiClient)
 	if err != nil {

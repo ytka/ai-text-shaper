@@ -17,7 +17,11 @@ func Confirm(message string) (bool, error) {
 	if err != nil {
 		return false, errors.Wrap(err, "failed to run the confirmation program")
 	}
-	return fM.(confirmModel).confirmed, nil
+	cm, ok := fM.(confirmModel)
+	if !ok {
+		return false, errors.New("failed to assert type confirmModel")
+	}
+	return cm.confirmed, nil
 }
 
 type confirmModel struct {
