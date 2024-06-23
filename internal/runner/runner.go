@@ -1,10 +1,11 @@
 package runner
 
 import (
-	"ai-text-shaper/internal/process"
 	"fmt"
 	"log"
 	"os"
+
+	"ai-text-shaper/internal/process"
 )
 
 // Runner manages the execution of text processing tasks.
@@ -15,8 +16,10 @@ type Runner struct {
 	confirmFunc                    ConfirmFunc
 }
 
-type GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
-type ConfirmFunc func(string) (bool, error)
+type (
+	GenerativeAIHandlerFactoryFunc func(model string) (process.GenerativeAIClient, error)
+	ConfirmFunc                    func(string) (bool, error)
+)
 
 func New(config *Config, inputFiles []string, gaiFactory GenerativeAIHandlerFactoryFunc, confirmFunc ConfirmFunc) *Runner {
 	return &Runner{
@@ -136,7 +139,7 @@ func (r *Runner) Setup() (*RunOption, error) {
 	return &RunOption{gaiClient: gai, promptText: promptText, inputFilePaths: inputFilePaths}, nil
 }
 
-// Run processing of multiple input files
+// Run processing of multiple input files.
 func (r *Runner) Run(opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
 	for i, inputPath := range opt.inputFilePaths {
 		r.verboseLog("start processing")

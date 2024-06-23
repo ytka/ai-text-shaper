@@ -8,8 +8,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type updateStatusMsg string
-type quitMsg struct{}
+type (
+	updateStatusMsg string
+	quitMsg         struct{}
+)
 
 type StatusUI struct {
 	program *tea.Program

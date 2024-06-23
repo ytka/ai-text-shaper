@@ -1,11 +1,10 @@
 package process
 
 import (
+	"ai-text-shaper/internal/openai"
 	"fmt"
 	"regexp"
 	"strings"
-
-	"ai-text-shaper/internal/openai"
 )
 
 // GenerativeAIClient represents an interface for generating AI client operations.

@@ -9,13 +9,13 @@ type ChatMessage struct {
 
 // CreateChatCompletion represents the structure of a request to the OpenAI API Chat endpoint.
 type CreateChatCompletion struct {
-	Messages       []ChatMessage   `json:"messages"`
-	Model          string          `json:"model"`
-	ResponseFormat *ResponseFormat `json:"response_format,omitempty"`
-	MaxTokens      *int            `json:"max_tokens,omitempty"`
-	N              *int            `json:"n,omitempty"`
-	Temperature    *float64        `json:"temperature,omitempty"`
-	Seed           *int            `json:"seed,omitempty"`
+	Messages         []ChatMessage      `json:"messages"`
+	Model            string             `json:"model"`
+	ResponseFormat   *ResponseFormat    `json:"response_format,omitempty"`
+	MaxTokens        *int               `json:"max_tokens,omitempty"`
+	N                *int               `json:"n,omitempty"`
+	Temperature      *float64           `json:"temperature,omitempty"`
+	Seed             *int               `json:"seed,omitempty"`
 	TopP             *float64           `json:"top_p,omitempty"`
 	Stop             []string           `json:"stop,omitempty"`
 	FrequencyPenalty *float64           `json:"frequency_penalty,omitempty"`
@@ -24,7 +24,7 @@ type CreateChatCompletion struct {
 	PresencePenalty  *float64           `json:"presence_penalty,omitempty"`
 }
 
-// ChatCompletion represents the JSON structure for the completion response
+// ChatCompletion represents the JSON structure for the completion response.
 type ChatCompletion struct {
 	ID                string         `json:"id"`
 	Object            string         `json:"object"`
