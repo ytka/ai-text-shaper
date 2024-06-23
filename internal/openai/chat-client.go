@@ -28,12 +28,11 @@ func (c *ChatClient) MakeCreateChatCompletion(prompt string) *CreateChatCompleti
 	return newCreateChatCompletion(c.model, prompt, c.maxTokens, false)
 }
 
-func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*ChatCompletion, error) {
+func (c *ChatClient) sendChatCompletionsRequest(ccc *CreateChatCompletion) (*http.Response, error) {
 	requestBody, err := json.Marshal(ccc)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
-
 	switch c.logLevel {
 	case "info":
 		fmt.Printf("model: %s, N: %d, Seed: %d, ResponseFormat: %s\n", ccc.Model, ccc.N, ccc.Seed, ccc.ResponseFormat)
@@ -49,24 +48,10 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apikey))
 
 	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to execute request: %w", err)
-	}
-	defer resp.Body.Close()
+	return client.Do(req)
+}
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
-	}
-	if resp.StatusCode > 299 {
-		var errorResponse ErrorResponse
-		if err := json.Unmarshal(body, &errorResponse); err != nil {
-			return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, body)
-		}
-		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
-	}
-
+func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
 	var comp ChatCompletion
 	if err := json.Unmarshal(body, &comp); err != nil {
 		return nil, err
@@ -84,4 +69,35 @@ func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*Ch
 	}
 
 	return &comp, nil
+}
+
+func (c *ChatClient) RequestCreateChatCompletion(ccc *CreateChatCompletion) (*ChatCompletion, error) {
+	resp, err := c.sendChatCompletionsRequest(ccc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute request: %w", err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("failed to close response body: %s\n", err)
+		}
+	}(resp.Body)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+	if resp.StatusCode > 299 {
+		var errorResponse ErrorResponse
+		if err := json.Unmarshal(body, &errorResponse); err != nil {
+			return nil, fmt.Errorf("unexpected status code: %d %s", resp.StatusCode, body)
+		}
+		return nil, fmt.Errorf("unexpected status code: %d '%s'", resp.StatusCode, errorResponse.Error.Message)
+	}
+
+	return c.makeCatCompletions(body)
 }
