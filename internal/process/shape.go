@@ -1,23 +1,27 @@
 package process
 
 import (
-	"ai-text-shaper/internal/openai"
 	"fmt"
 	"regexp"
 	"strings"
+
+	"ai-text-shaper/internal/openai"
 )
 
+// GenerativeAIClient represents an interface for generating AI client operations.
 type GenerativeAIClient interface {
 	RequestCreateChatCompletion(*openai.CreateChatCompletion) (*openai.ChatCompletion, error)
 	MakeCreateChatCompletion(prompt string) *openai.CreateChatCompletion
 }
 
+// ShapeResult represents the result of a text shaping operation.
 type ShapeResult struct {
 	Prompt    string
 	RawResult string
 	Result    string
 }
 
+// NewShapeResult creates a new ShapeResult.
 func NewShapeResult(prompt, rawResult, result string) *ShapeResult {
 	if !strings.HasSuffix(result, "\n") {
 		result += "\n"
@@ -25,6 +29,7 @@ func NewShapeResult(prompt, rawResult, result string) *ShapeResult {
 	return &ShapeResult{Prompt: prompt, RawResult: rawResult, Result: result}
 }
 
+// Shaper is responsible for shaping the text by interacting with GenerativeAIClient.
 type Shaper struct {
 	gai                      GenerativeAIClient
 	maxCompletionRepeatCount int
@@ -32,18 +37,19 @@ type Shaper struct {
 	promptOptimize           bool
 }
 
-func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock bool, promptOptimize bool) *Shaper {
+// NewShaper creates a new Shaper.
+func NewShaper(gai GenerativeAIClient, maxCompletionRepeatCount int, useFirstCodeBlock, promptOptimize bool) *Shaper {
 	return &Shaper{gai: gai, maxCompletionRepeatCount: maxCompletionRepeatCount, useFirstCodeBlock: useFirstCodeBlock, promptOptimize: promptOptimize}
 }
 
+// ShapeText shapes the text based on the given prompts.
 func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 	if inputOrg == "" && !s.promptOptimize {
 		rawResult, err := s.requestCreateChatCompletion(promptOrg)
 		if err != nil {
 			return nil, err
 		}
-		result := rawResult
-		return NewShapeResult(promptOrg, rawResult, result), nil
+		return NewShapeResult(promptOrg, rawResult, rawResult), nil
 	}
 
 	optimized := optimizePrompt(promptOrg, inputOrg)
@@ -61,8 +67,6 @@ func (s *Shaper) ShapeText(promptOrg, inputOrg string) (*ShapeResult, error) {
 func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 	var result string
 	cr := s.gai.MakeCreateChatCompletion(prompt)
-
-	//count := s.maxCompletionRepeatCount
 	maxCount := 1
 	for i := 0; i < maxCount; i++ {
 		comp, err := s.gai.RequestCreateChatCompletion(cr)
@@ -73,19 +77,12 @@ func (s *Shaper) requestCreateChatCompletion(prompt string) (string, error) {
 		if comp.Choices == nil || len(comp.Choices) == 0 {
 			break
 		}
-		// use the first choice only
+
 		choice := comp.Choices[0]
 		result += choice.Message.Content
 		if choice.FinishReason != "length" {
 			break
 		}
-		// can not continue exceed response size limit
-		/*
-			cr.Messages = append(cr.Messages,
-				openai.ChatMessage{Role: "assistant", Content: choice.Message.Content},
-				// openai.ChatMessage{Role: "system", Content: "Continue from where you left off."},
-			)
-		*/
 	}
 
 	return result, nil
@@ -96,12 +93,9 @@ func optimizePrompt(prompt, input string) string {
 		"The subject of the Instruction is the area enclosed by the ai-text-shaper-input tag.",
 		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
 		"Provide additional explanations or details only if explicitly requested in the Instruction.",
-		// "Only the result shall be returned.",
 	}
 	supplementation := strings.Join(supplements, " ")
-	mergedPrmpt := fmt.Sprintf(`<Instruction>%s. (%s)</Instruction>
-<ai-text-shaper-input>%s</ai-text-shaper-input>`, prompt, supplementation, input)
-	return mergedPrmpt
+	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n<ai-text-shaper-input>%s</ai-text-shaper-input>", prompt, supplementation, input)
 }
 
 func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) (string, error) {
