@@ -2,9 +2,10 @@ package runner
 
 import (
 	"fmt"
-	"github/ytka/ai-text-shaper/internal/process"
 	"log"
 	"os"
+
+	"github/ytka/ai-text-shaper/internal/process"
 )
 
 // Runner manages the execution of text processing tasks.

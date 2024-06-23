@@ -1,6 +1,7 @@
+linters-settings:
+  goimports:
+    local-prefixes: github/ytka/ai-text-shaper
 linters:
-  #goimports:
-  #  local-prefixes: myproject
   presets:
     - bugs
     - comment

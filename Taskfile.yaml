@@ -13,6 +13,10 @@ tasks:
     desc: Fix lint errors
     cmds:
       - golangci-lint run --fix
+  import-fix:
+    desc: Fix import errors
+    cmds:
+      - goimports -w -local github/ytka/ai-text-shaper .
   build:
     desc: Build the project
     vars:

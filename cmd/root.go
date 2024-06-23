@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/spf13/cobra"
+
 	"github/ytka/ai-text-shaper/internal/openai"
 	"github/ytka/ai-text-shaper/internal/process"
 	"github/ytka/ai-text-shaper/internal/runner"
