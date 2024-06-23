@@ -67,8 +67,8 @@ func (c *ChatClient) sendChatCompletionsRequest(ctx context.Context, ccc *Create
 	return resp, nil
 }
 
-// makeCatCompletions creates a new ChatCompletion.
-func (c *ChatClient) makeCatCompletions(body []byte) (*ChatCompletion, error) {
+// makeChatCompletions creates a new ChatCompletion.
+func (c *ChatClient) makeChatCompletions(body []byte) (*ChatCompletion, error) {
 	var comp ChatCompletion
 	if err := json.Unmarshal(body, &comp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
@@ -112,5 +112,5 @@ func (c *ChatClient) RequestCreateChatCompletion(ctx context.Context, ccc *Creat
 		return nil, fmt.Errorf("%w: %d '%s'", ErrUnexpectedStatusCode, resp.StatusCode, errorResponse.Error.Message)
 	}
 
-	return c.makeCatCompletions(respBody)
+	return c.makeChatCompletions(respBody)
 }

@@ -2,6 +2,7 @@ package steps
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -9,8 +10,13 @@ import (
 	"github.com/ytka/ai-text-shaper/internal/openai"
 )
 
-// reCodeBlock is a regular expression to find code blocks in markdown.
-var reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
+var (
+	// reCodeBlock is a regular expression to find code blocks in markdown.
+	reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
+
+	// ErrNoChoices is an error when there are no choices in chat completion.
+	ErrNoChoices = errors.New("no choices in chat completion")
+)
 
 type ShapePrompt string
 
@@ -73,22 +79,20 @@ func (s *Shaper) Shape(ctx context.Context, prompt ShapePrompt) (*ShapeResult, e
 func (s *Shaper) requestCreateChatCompletion(ctx context.Context, prompt string) (string, error) {
 	var result string
 	cr := s.gai.MakeCreateChatCompletion(prompt)
-	maxCount := 1
-	for i := 0; i < maxCount; i++ {
-		comp, err := s.gai.RequestCreateChatCompletion(ctx, cr)
-		if err != nil {
-			return "", fmt.Errorf("failed to send chat message: %w", err)
-		}
 
-		if comp.Choices == nil || len(comp.Choices) == 0 {
-			break
-		}
+	comp, err := s.gai.RequestCreateChatCompletion(ctx, cr)
+	if err != nil {
+		return "", fmt.Errorf("failed to send chat message: %w", err)
+	}
 
-		choice := comp.Choices[0]
-		result += choice.Message.Content
-		if choice.FinishReason != "length" {
-			break
-		}
+	if comp.Choices == nil || len(comp.Choices) == 0 {
+		return "", ErrNoChoices
+	}
+
+	choice := comp.Choices[0]
+	result += choice.Message.Content
+	if choice.FinishReason != "length" {
+		return result, nil
 	}
 
 	return result, nil
