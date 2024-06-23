@@ -73,12 +73,7 @@ func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePa
 	r.verboseLog("[%d] resultText: '%s'", index, shapeResult.Result)
 
 	if !r.config.Silent && !r.config.DryRun && !r.config.Rewrite {
-		process.OutputToStdout(shapeResult.Result, inputText, r.config.Diff)
-	}
-
-	outpath := r.config.Outpath
-	if r.config.Rewrite {
-		outpath = inputFilePath
+		process.Print(shapeResult.Result, inputText, r.config.Diff)
 	}
 
 	if r.config.Confirm {
@@ -87,6 +82,10 @@ func (r *Runner) output(shapeResult *process.ShapeResult, index int, inputFilePa
 		}
 	}
 
+	outpath := r.config.Outpath
+	if r.config.Rewrite {
+		outpath = inputFilePath
+	}
 	if outpath != "" && !r.config.DryRun {
 		r.verboseLog("[%d] Writing to file: %s", index, outpath)
 		if err := process.WriteResult(shapeResult.Result, outpath); err != nil {

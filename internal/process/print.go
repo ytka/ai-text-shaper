@@ -32,7 +32,7 @@ func GetDiffSize(leftText, rightText string) (bool, int, int) {
 	return added > 0 || removed > 0, added, removed
 }
 
-func OutputToStdout(outputText, inputText string, useDiff bool) {
+func Print(outputText, inputText string, useDiff bool) {
 	fmt.Print(outputText)
 
 	if useDiff {
