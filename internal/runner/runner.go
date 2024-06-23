@@ -82,15 +82,13 @@ func (r *Runner) Setup() (*RunOption, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if stdin is pipe: %w", err)
 	}
-	promptAdded := ""
 	if pipeAvailable && len(r.inputFiles) >= 1 {
 		added, err := steps.GetInputText("-")
 		if err != nil {
 			return nil, fmt.Errorf("failed to get input text from stdin: %w", err)
 		}
-		promptAdded = added
+		promptText += fmt.Sprintf("\n%s", added)
 	}
-	promptText += promptAdded
 
 	var inputFilePaths []string
 	if len(r.inputFiles) == 0 {
