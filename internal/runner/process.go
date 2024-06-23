@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github/ytka/ai-text-shaper/internal/steps"
 	"log"
 	"os"
@@ -68,7 +69,7 @@ func (p *Process) getInputAndShape(index int, inputFilePath string, promptText s
 	p.verboseLog("[%d] get input text from: %s", index, inputFilePath)
 	inputText, err := steps.GetInputText(inputFilePath)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get input text")
 	}
 	p.verboseLog("[%d] inputText: '%s'", index, inputText)
 
@@ -76,7 +77,7 @@ func (p *Process) getInputAndShape(index int, inputFilePath string, promptText s
 	shaper := steps.NewShaper(gai, p.config.MaxCompletionRepeatCount, p.config.UseFirstCodeBlock, p.config.PromptOptimize)
 	result, err := shaper.ShapeText(promptText, inputText)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to shape text")
 	}
 	return result, nil
 }
@@ -105,7 +106,7 @@ func (p *Process) write(index int, resultText string, outpath string) error {
 	if outpath != "" && !p.config.DryRun {
 		p.verboseLog("[%d] Writing to file: %s", index, outpath)
 		if err := steps.WriteResult(resultText, outpath); err != nil {
-			return err
+			return errors.Wrap(err, "failed to write result")
 		}
 	}
 	return nil
