@@ -46,7 +46,6 @@ func (p *Process) Run(i int, inputPath string, opt *RunOption, onBeforeProcessin
 	p.verboseLog("start processing")
 
 	onBeforeProcessing(inputPath)
-	shapeResult := &steps.ShapeResult{}
 	shapeResult, err := p.getInputAndShape(inputPath, opt.promptText, opt.gaiClient)
 	if err != nil {
 		onAfterProcessing(inputPath)
@@ -85,7 +84,7 @@ func (p *Process) confirm(index int, inputFilePath string) error {
 	p.verboseLog("[%d] Confirming", index)
 	conf, err := p.confirmFunc("Continue (y/n)?: ")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "confirmation failed")
 	}
 	p.verboseLog("[%d] Confirmation: %t", index, conf)
 	if !conf && inputFilePath == "-" {
