@@ -84,8 +84,7 @@ func Execute(version, commit, date, builtBy string) {
 	sb.WriteString(builtBy)
 	rootCmd.Version = sb.String()
 	if err := rootCmd.Execute(); err != nil {
-		//	_, _ = fmt.Fprintln(os.Stderr, err)
-		// os.Exit(1)
+		os.Exit(1)
 	}
 }
 
