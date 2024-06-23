@@ -14,25 +14,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var c runner.Config
-
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "ai-text-shaper",
-	Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
-	Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		inputFiles := args
-		if c.InputFileList != "" {
-			files, err := readInputFiles(c.InputFileList)
-			if err != nil {
-				return err
+var (
+	c       runner.Config
+	rootCmd = &cobra.Command{
+		Use:   "ai-text-shaper",
+		Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model",
+		Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			inputFiles := args
+			if c.InputFileList != "" {
+				files, err := readInputFiles(c.InputFileList)
+				if err != nil {
+					return err
+				}
+				inputFiles = files
 			}
-			inputFiles = files
-		}
-		return doRun(inputFiles, makeGAIFunc)
-	},
-}
+			return doRun(inputFiles, makeGAIFunc)
+		},
+	}
+)
 
 func init() {
 	rootCmd.Version = "testX"
