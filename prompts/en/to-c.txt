@@ -1,1 +1,1 @@
-Please translate the following program into C language. No explanation is needed. Just return the result in savable text format.
+Convert the following program to C. No explanation is needed. Return the result in a plain text format that can be saved as-is.

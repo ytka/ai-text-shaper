@@ -1,6 +1,0 @@
-Please review the following Go code based on the Google Style Guide (https://google.github.io/styleguide/). Specifically, I would like you to check for adherence to the style guide's recommendations, including:
-
-1. Code formatting and indentation
-2. Naming conventions for variables, functions, and packages
-3. Proper use of comments and documentation
-4. Consistency and readability of the code

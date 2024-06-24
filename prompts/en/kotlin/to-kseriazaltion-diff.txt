@@ -1,0 +1,22 @@
+```diff
+--- original.kt	2023-11-02 12:00:00.000000000 +0900
++++ modified.kt	2023-11-02 12:00:00.000000000 +0900
+@@ -1,6 +1,7 @@
+-import com.fasterxml.jackson.annotation.JsonProperty
+-import com.fasterxml.jackson.annotation.JsonIgnore
+-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
++import kotlinx.serialization.Serializable
++import kotlinx.serialization.SerialName
++import kotlinx.serialization.Transient
+
+-@JsonIgnoreProperties(ignoreUnknown = true)
++@Serializable
+ data class Person(
+-    @JsonProperty("first_name") val firstName: String,
+-    @JsonProperty("last_name") val lastName: String,
+-    @JsonIgnore val age: Int
++    @SerialName("first_name") val firstName: String,
++    @SerialName("last_name") val lastName: String,
++    @Transient val age: Int = 0
+ )
+```
