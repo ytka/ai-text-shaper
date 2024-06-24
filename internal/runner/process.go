@@ -35,7 +35,7 @@ func (p *Process) Run(ctx context.Context, i int, inputPath string, opt *RunOpti
 		return err
 	}
 	onAfterProcessing(inputPath, shapeResult)
-	p.verboseLog("end processing: %+v", shapeResult)
+	p.verboseLog("end processing: %s", shapeResult.ChatCompletion.ID)
 
 	if err := p.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {
 		return err

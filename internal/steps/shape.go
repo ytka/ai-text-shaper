@@ -111,7 +111,7 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 	if inputFilePath != "" && inputFilePath != "-" {
 		header = fmt.Sprintf("filepath=\"%s\"\n", inputFilePath)
 	}
-	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<textforge-input>\n%s\n<textforge-input>", prompt, supplementation, header, input)
+	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<textforge-input>\n%s\n</textforge-input>", prompt, supplementation, header, input)
 }
 
 // optimizeResponseResult refines the AI's response, potentially extracting code blocks.
