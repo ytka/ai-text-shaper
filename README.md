@@ -28,38 +28,56 @@ You can specify one or more input files. If no input files are specified, it rea
 
 ### Options
 
+#### General Options
+
+- `-h, --help`
+   - Show help for `textforge`.
+- `--version`
+   - Show version information for `textforge`.
+
 #### Prompt Options
 
 - `-p, --prompt string`
    - Specify the text for the prompt.
-
 - `-P, --prompt-path string`
    - Specify the path to a prompt file (text file). The string read from this file will be used as the prompt.
 - `-m, --model string`
-   - Specify the model to use for Chat. The default is `gpt-4`.
+   - Specify the model to use for Chat. The default is `gpt-4o`.
+- `-t, --max-tokens int`
+   - Specify the maximum number of tokens to generate.
+- `-O, --prompt-optimize`
+   - Optimize prompt text (default true).
 
 #### Output Options
 
 - `-v, --verbose`
    - Enable detailed output.
-
 - `-s, --silent`
    - Suppress all output.
-
 - `-d, --diff`
    - In addition to normal output, show the differences between the input and output texts.
+- `-C, --show-cost`
+   - Show the cost of the text generation.
+
+#### Execution Options
+
+- `-D, --dry-run`
+   - Run without making actual changes.
+- `-l, --log-api-level string`
+   - Set API log level: info, debug.
+- `--max-completion-repeat-count int`
+   - Set the maximum number of completion repeats (default 1).
 
 #### File Writing Options
 
+- `-i, --input-file-list string`
+   - Provide a list of input files.
 - `-r, --rewrite`
    - Rewrite the input file with the result.
-
 - `-o, --outpath string`
    - Specify the path to the output file.
-
 - `-f, --use-first-code-block`
    - If the output text contains code blocks, use the first code block as the output.
-
 - `-c, --confirm`
    - Ask for confirmation before writing to a file.
 

@@ -61,6 +61,10 @@ tasks:
     cmds:
       - git diff | go run main.go -P=prompts/en/commit-msg.txt -c -f --outpath=/tmp/commit-msg && git add . && git commit -m "$(cat /tmp/commit-msg)" || echo "Abort"
   # forge documentation
+  forge-doc:
+    desc: Forge the documentation
+    cmds:
+      - printf "以下のプログラムのヘルプに基づいて READMEを更新して。\n%s" "$(go run main.go --help)" | go run main.go -P - README.ja.md --rewrite
   translate-prompts-to-en:
     desc: Translate the commit message to English
     cmds:
