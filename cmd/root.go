@@ -137,12 +137,16 @@ func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model stri
 	onBeforeProcessing := func(string) {}
 	onAfterProcessing := rawOnAfterProcessing
 
-	pipeAvailable, err := ioutil.IsAvailablePipe(os.Stdin)
+	stdinPipeAvailable, err := ioutil.IsStdinPipe()
 	if err != nil {
 		return fmt.Errorf("failed to check if stdin is pipe: %w", err)
 	}
+	stdoutPipeAvailable, err := ioutil.IsStdoutPipeOrRedirect()
+	if err != nil {
+		return fmt.Errorf("failed to check if stdout is pipe: %w", err)
+	}
 
-	enableTUI := !c.Silent && !pipeAvailable
+	enableTUI := !c.Silent && !stdinPipeAvailable && !stdoutPipeAvailable
 	if enableTUI {
 		var wg sync.WaitGroup
 		var statusUI *tui.StatusUI

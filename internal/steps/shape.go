@@ -14,7 +14,8 @@ var (
 	// reCodeBlock is a regular expression to find code blocks in markdown.
 	reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
 
-	reOutputTagBlock = regexp.MustCompile("<textforge-output>\\s*(.*?)\\s*</textforge-output>")
+	// reOutputTagBlock is a regular expression to find output tag blocks.
+	reOutputTagBlock = regexp.MustCompile("(?s)<textforge-output>\\s*(.*?)\\s*</textforge-output>")
 
 	// ErrNoChoices is an error when there are no choices in chat completion.
 	ErrNoChoices = errors.New("no choices in chat completion")
@@ -117,9 +118,9 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) string {
 	result := rawResult
 
-	match := reOutputTagBlock.FindStringSubmatch(result)
-	if match != nil {
-		result = match[1]
+	matches := reOutputTagBlock.FindStringSubmatch(result)
+	if len(matches) > 1 {
+		result = matches[1]
 	}
 
 	if strings.HasPrefix(result, "```") && strings.HasSuffix(result, "```") {

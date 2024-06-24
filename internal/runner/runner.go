@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ytka/textforge/internal/openai"
-	"log"
-	"os"
-
 	"github.com/ytka/textforge/internal/ioutil"
+	"github.com/ytka/textforge/internal/openai"
 	"github.com/ytka/textforge/internal/steps"
+	"log"
 )
 
 var (
@@ -72,7 +70,7 @@ func (r *Runner) Setup() (*RunOption, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get prompt text: %w", err)
 	}
-	pipeAvailable, err := ioutil.IsAvailablePipe(os.Stdin)
+	pipeAvailable, err := ioutil.IsStdinPipe()
 	if err != nil {
 		return nil, fmt.Errorf("failed to check if stdin is pipe: %w", err)
 	}
