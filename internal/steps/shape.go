@@ -14,6 +14,8 @@ var (
 	// reCodeBlock is a regular expression to find code blocks in markdown.
 	reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
 
+	reOutputTagBlock = regexp.MustCompile("<textforge-output>\\s*(.*?)\\s*</textforge-output>")
+
 	// ErrNoChoices is an error when there are no choices in chat completion.
 	ErrNoChoices = errors.New("no choices in chat completion")
 )
@@ -101,7 +103,7 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 	supplements := []string{
 		"The subject of the Instruction is the area enclosed by the textforge-input tag.",
 		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
-		"Only results should be returned and no explanation or supplementary information is required, but additional explanation or details should be provided if explicitly requested in the instructions.",
+		"Wrap the result in a <textforge-output> tag and return it. Only results should be returned and no explanation or supplementary information is required, but additional explanation or details should be provided if explicitly requested in the instructions.",
 	}
 	supplementation := strings.Join(supplements, " ")
 	header := ""
@@ -114,6 +116,12 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 // optimizeResponseResult refines the AI's response, potentially extracting code blocks.
 func optimizeResponseResult(rawResult string, useFirstCodeBlock bool) string {
 	result := rawResult
+
+	match := reOutputTagBlock.FindStringSubmatch(result)
+	if match != nil {
+		result = match[1]
+	}
+
 	if strings.HasPrefix(result, "```") && strings.HasSuffix(result, "```") {
 		lines := strings.Split(result, "\n")
 		if len(lines) > 2 {
