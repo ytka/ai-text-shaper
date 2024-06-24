@@ -1,4 +1,3 @@
-<textforge-output>
 ## リスト
 
 順序なしリスト
@@ -51,4 +50,3 @@ var foo = function (bar) {
 
 console.log(foo(5));
 ```
-<textforge-output>
