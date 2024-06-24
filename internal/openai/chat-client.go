@@ -76,7 +76,7 @@ func (c *ChatClient) makeChatCompletions(body []byte) (*ChatCompletion, error) {
 
 	switch c.logLevel {
 	case "info":
-		fmt.Printf("ID: %s, Object: %s, Created: %d, Model: %s, SystemFingerprint: %s, ChoicesCount:%d\n",
+		fmt.Printf("ID: %s, Object: %s, Created: %d, model: %s, SystemFingerprint: %s, ChoicesCount:%d\n",
 			comp.ID, comp.Object, comp.Created, comp.Model, comp.SystemFingerprint, len(comp.Choices))
 		if len(comp.Choices) > 0 {
 			fmt.Printf("[0]FinishReason: %s, Index: %d\n", comp.Choices[0].FinishReason, comp.Choices[0].Index)

@@ -18,20 +18,6 @@ var (
 	ErrOutpathMultipleFiles       = errors.New("outpath cannot be provided when multiple input files are provided")
 )
 
-// Validate checks the configuration for errors.
-func (c *Config) Validate(inputFiles []string) error {
-	if c.Prompt == "" && c.PromptPath == "" {
-		return ErrPromptOrPromptPathRequired
-	}
-	if c.Outpath != "" && c.Rewrite {
-		return ErrOutpathRewriteConflict
-	}
-	if c.Outpath != "" && len(inputFiles) > 1 {
-		return ErrOutpathMultipleFiles
-	}
-	return nil
-}
-
 // Runner manages the execution of text processing tasks.
 type Runner struct {
 	config                         *Config
@@ -109,7 +95,7 @@ func (r *Runner) Setup() (*RunOption, error) {
 }
 
 // Run processing of multiple input files.
-func (r *Runner) Run(ctx context.Context, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
+func (r *Runner) Run(ctx context.Context, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string, *steps.ShapeResult)) error {
 	for i, inputPath := range opt.inputFilePaths {
 		p := NewProcess(r.config, r.confirmFunc)
 		if err := p.Run(ctx, i, inputPath, opt, onBeforeProcessing, onAfterProcessing); err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ytka/ai-text-shaper/internal/steps"
 	"os"
 	"strings"
 	"sync"
@@ -49,8 +50,8 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
 	rootCmd.Flags().BoolVarP(&c.PromptOptimize, "prompt-optimize", "O", true, "Optimize prompt text")
 
-	// Model options
-	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "Model to use for text generation")
+	// model options
+	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "model to use for text generation")
 	rootCmd.Flags().IntVarP(&c.MaxTokens, "max-tokens", "t", 0, "Max tokens to generate")
 	rootCmd.Flags().IntVar(&c.MaxCompletionRepeatCount, "max-completion-repeat-count", 1, "Max completion repeat count")
 
@@ -58,6 +59,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&c.DryRun, "dry-run", "D", false, "Dry run")
 	rootCmd.Flags().BoolVarP(&c.Verbose, "verbose", "v", false, "Verbose output")
 	rootCmd.Flags().BoolVarP(&c.Silent, "silent", "s", false, "Suppress output")
+	rootCmd.Flags().BoolVarP(&c.ShowCost, "show-cost", "C", false, "Show cost of the text generation")
 	rootCmd.Flags().BoolVarP(&c.Diff, "diff", "d", false, "Show diff of the input and output text")
 
 	// Input file options
@@ -125,8 +127,15 @@ func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model stri
 		return fmt.Errorf("failed to setup runner: %w", err)
 	}
 
+	var usageCosts = make([]*openai.UsageCost, 0, len(inputFiles))
+	rawOnAfterProcessing := func(inpath string, sr *steps.ShapeResult) {
+		if sr != nil {
+			usageCosts = append(usageCosts, openai.NewUsageCost(sr.ChatCompletion))
+		}
+	}
+
 	onBeforeProcessing := func(string) {}
-	onAfterProcessing := func(string) {}
+	onAfterProcessing := rawOnAfterProcessing
 
 	pipeAvailable, err := ioutil.IsAvailablePipe(os.Stdin)
 	if err != nil {
@@ -151,9 +160,10 @@ func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model stri
 				}
 			}()
 		}
-		onAfterProcessing = func(string) {
+		onAfterProcessing = func(inpath string, sr *steps.ShapeResult) {
 			statusUI.Quit()
 			statusUI = nil
+			rawOnAfterProcessing(inpath, sr)
 			wg.Wait()
 		}
 	}
@@ -161,5 +171,15 @@ func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model stri
 	if err := r.Run(ctx, ropt, onBeforeProcessing, onAfterProcessing); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
+
+	if c.ShowCost {
+		totalUsageCost := openai.NewTotalUsageCost(usageCosts)
+		if ok, cost := totalUsageCost.TotalTotalTokensCost(); ok {
+			fmt.Printf("Total cost: $%f\n", cost)
+		} else {
+			fmt.Println("Total cost: unknown")
+		}
+	}
+
 	return nil
 }

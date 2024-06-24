@@ -10,25 +10,6 @@ import (
 	"os"
 )
 
-type Config struct {
-	Prompt                   string
-	PromptPath               string
-	PromptOptimize           bool
-	Model                    string
-	MaxTokens                int
-	MaxCompletionRepeatCount int
-	DryRun                   bool
-	Silent                   bool
-	Verbose                  bool
-	Diff                     bool
-	InputFileList            string
-	LogAPILevel              string
-	Rewrite                  bool
-	Outpath                  string
-	UseFirstCodeBlock        bool
-	Confirm                  bool
-}
-
 type Process struct {
 	config      *Config
 	confirmFunc ConfirmFunc
@@ -44,16 +25,16 @@ func (p *Process) verboseLog(msg string, args ...interface{}) {
 	}
 }
 
-func (p *Process) Run(ctx context.Context, i int, inputPath string, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string)) error {
+func (p *Process) Run(ctx context.Context, i int, inputPath string, opt *RunOption, onBeforeProcessing func(string), onAfterProcessing func(string, *steps.ShapeResult)) error {
 	p.verboseLog("start processing")
 	onBeforeProcessing(inputPath)
 	shapeResult, err := p.getInputAndShape(ctx, inputPath, opt.promptText, opt.gaiClient)
 	if err != nil {
-		onAfterProcessing(inputPath)
+		onAfterProcessing(inputPath, shapeResult)
 		p.verboseLog("end processing")
 		return err
 	}
-	onAfterProcessing(inputPath)
+	onAfterProcessing(inputPath, shapeResult)
 	p.verboseLog("end processing: %+v", shapeResult)
 
 	if err := p.output(shapeResult, i+1, inputPath, shapeResult.Prompt); err != nil {

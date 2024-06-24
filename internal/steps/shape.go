@@ -22,20 +22,22 @@ type ShapePrompt string
 
 // ShapeResult represents the result of a text shaping operation.
 type ShapeResult struct {
-	Prompt    string
-	RawResult string
-	Result    string
+	Prompt         string
+	ChatCompletion *openai.ChatCompletion
+	RawResult      string
+	Result         string
 }
 
 // NewShapeResult creates a new ShapeResult.
-func NewShapeResult(prompt, rawResult, result string) *ShapeResult {
+func NewShapeResult(prompt string, chatCompletion *openai.ChatCompletion, rawResult, result string) *ShapeResult {
 	if !strings.HasSuffix(result, "\n") {
 		result += "\n"
 	}
 	return &ShapeResult{
-		Prompt:    prompt,
-		RawResult: rawResult,
-		Result:    result,
+		Prompt:         prompt,
+		ChatCompletion: chatCompletion,
+		RawResult:      rawResult,
+		Result:         result,
 	}
 }
 
@@ -67,35 +69,31 @@ func (s *Shaper) MakeShapePrompt(inputFilePath, promptOrg, inputOrg string) Shap
 
 // Shape shapes the text based on the given prompts.
 func (s *Shaper) Shape(ctx context.Context, prompt ShapePrompt) (*ShapeResult, error) {
-	rawResult, err := s.requestCreateChatCompletion(ctx, string(prompt))
+	comp, rawResult, err := s.requestCreateChatCompletion(ctx, string(prompt))
 	if err != nil {
 		return nil, err
 	}
 
-	return NewShapeResult(string(prompt), rawResult, optimizeResponseResult(rawResult, s.useFirstCodeBlock)), nil
+	return NewShapeResult(string(prompt), comp, rawResult, optimizeResponseResult(rawResult, s.useFirstCodeBlock)), nil
 }
 
 // requestCreateChatCompletion requests the AI to create chat completion based on the given prompt.
-func (s *Shaper) requestCreateChatCompletion(ctx context.Context, prompt string) (string, error) {
+func (s *Shaper) requestCreateChatCompletion(ctx context.Context, prompt string) (*openai.ChatCompletion, string, error) {
 	var result string
 	cr := s.gai.MakeCreateChatCompletion(prompt)
 
 	comp, err := s.gai.RequestCreateChatCompletion(ctx, cr)
 	if err != nil {
-		return "", fmt.Errorf("failed to send chat message: %w", err)
+		return nil, "", fmt.Errorf("failed to send chat message: %w", err)
 	}
 
 	if comp.Choices == nil || len(comp.Choices) == 0 {
-		return "", ErrNoChoices
+		return nil, "", ErrNoChoices
 	}
 
 	choice := comp.Choices[0]
 	result += choice.Message.Content
-	if choice.FinishReason != "length" {
-		return result, nil
-	}
-
-	return result, nil
+	return comp, result, nil
 }
 
 // optimizePrompt refines the prompt by incorporating additional information.
