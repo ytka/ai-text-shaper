@@ -4,16 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ytka/textforge/internal/steps"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
-
 	"github.com/ytka/textforge/internal/ioutil"
 	"github.com/ytka/textforge/internal/openai"
 	"github.com/ytka/textforge/internal/runner"
+	"github.com/ytka/textforge/internal/steps"
 	"github.com/ytka/textforge/internal/tui"
 )
 
@@ -82,7 +81,7 @@ func Execute(version, commit, date, builtBy string) {
 	sb.WriteString(commit)
 	sb.WriteString(", built at ")
 	sb.WriteString(date)
-	sb.WriteString(", build by ")
+	sb.WriteString(", built by ")
 	sb.WriteString(builtBy)
 	rootCmd.Version = sb.String()
 	if err := rootCmd.Execute(); err != nil {

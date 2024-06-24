@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ytka/textforge/internal/openai"
 	"os"
 	"strings"
+
+	"github.com/ytka/textforge/internal/openai"
 )
 
 func getAPIKeyFilePath() string {
