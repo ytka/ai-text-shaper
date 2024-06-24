@@ -163,6 +163,68 @@ textforge -f /path/to/inputfile.txt
 textforge -c /path/to/inputfile.txt
 ```
 
+## 実際の開発での利用例
+
+このプロジェクトでは開発に textforge を使っています。
+Taskfile.yamlにタスクとして登録し、タスクにはAIコードレビューによる修正や翻訳処理などを自動化しています。
+どのような自動化ができるかタスクの内容を紹介します。
+
+### lint-fix-ai
+
+AIを使用して静的解析のエラーを自動修正します。通常の lint fixオプションでは修正できない問題も修正できます（できない場合もある）。
+```sh
+task lint-fix-ai
+```
+
+### auto-review-changed
+
+変更されたファイル(git diff)をレビューし、必要があれば修正します。
+```sh
+task auto-review-changed
+```
+
+### auto-review
+
+プロジェクト全体をレビューし、必要があれば修正します。
+```sh
+task auto-review
+```
+
+### auto-commit
+
+変更を内容からコミットメッセージを作成し、コミットします。コミット前にメッセージ内容でよいか確認します。
+```sh
+task auto-commit
+```
+
+### forge-doc-by-help
+
+プログラムのヘルプに基づいて、READMEを更新します。
+```sh
+task forge-doc-by-help
+```
+
+### forge-doc-by-taskfile
+
+Taskfileの利用例に基づいて、READMEの使い方や利用例を更新します。
+```sh
+task forge-doc-by-taskfile
+```
+
+### translate-prompts-to-en
+
+日本語のサンプルプロンプトを英語に翻訳します。
+```sh
+task translate-prompts-to-en
+```
+
+### translate-readme-to-en
+
+日本語のREADMEを英語に翻訳します。
+```sh
+task translate-readme-to-en
+```
+
 ## ライセンス
 
 このプロジェクトは[MITライセンス](link_to_license)の下でライセンスされています。
