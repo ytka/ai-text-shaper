@@ -17,14 +17,15 @@ import (
 )
 
 var (
-	c       runner.Config
-	rootCmd = &cobra.Command{
+	ErrorAPIKeyFileNotFound = errors.New("API key file not found")
+	c                       runner.Config
+	rootCmd                 = &cobra.Command{
 		Use:   "textforge",
 		Short: "textforge is a tool designed to shape and transform text using OpenAI's GPT model.",
 		Long:  "textforge is a tool designed to shape and transform text using OpenAI's GPT model.",
 		RunE: func(_ *cobra.Command, args []string) error {
 			if !checkAPIKeyFileExists() {
-				return errors.New("API key file not found. Please create a file at '" + getAPIKeyFilePath() + "' with your OpenAI API key")
+				return fmt.Errorf("%w: %s", ErrorAPIKeyFileNotFound, getAPIKeyFilePath())
 			}
 
 			inputFiles := args
@@ -119,33 +120,19 @@ func readInputFiles(fileName string) ([]string, error) {
 	return files, nil
 }
 
-func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model string) (openai.GenerativeAIClient, error)) error {
-	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
-	ropt, err := r.Setup()
-	if err != nil {
-		return fmt.Errorf("failed to setup runner: %w", err)
+func showCosts(usageCosts []*openai.UsageCost) {
+	totalUsageCost := openai.NewTotalUsageCost(usageCosts)
+	if ok, cost := totalUsageCost.TotalTotalTokensCost(); ok {
+		fmt.Printf("Total cost: $%f\n", cost)
+	} else {
+		fmt.Println("Total cost: unknown")
 	}
+}
 
-	var usageCosts = make([]*openai.UsageCost, 0, len(inputFiles))
-	rawOnAfterProcessing := func(inpath string, sr *steps.ShapeResult) {
-		if sr != nil {
-			usageCosts = append(usageCosts, openai.NewUsageCost(sr.ChatCompletion))
-		}
-	}
-
+func createProcessingCallbackFunc(enableTUI bool, rawOnAfterProcessing func(string, *steps.ShapeResult)) (func(string), func(string, *steps.ShapeResult)) {
 	onBeforeProcessing := func(string) {}
 	onAfterProcessing := rawOnAfterProcessing
 
-	stdinPipeAvailable, err := ioutil.IsStdinPipe()
-	if err != nil {
-		return fmt.Errorf("failed to check if stdin is pipe: %w", err)
-	}
-	stdoutPipeAvailable, err := ioutil.IsStdoutPipeOrRedirect()
-	if err != nil {
-		return fmt.Errorf("failed to check if stdout is pipe: %w", err)
-	}
-
-	enableTUI := !c.Silent && !stdinPipeAvailable && !stdoutPipeAvailable
 	if enableTUI {
 		var wg sync.WaitGroup
 		var statusUI *tui.StatusUI
@@ -171,17 +158,40 @@ func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model stri
 		}
 	}
 
+	return onBeforeProcessing, onAfterProcessing
+}
+
+func doRun(ctx context.Context, inputFiles []string, makeGAIFunc func(model string) (openai.GenerativeAIClient, error)) error {
+	r := runner.New(&c, inputFiles, makeGAIFunc, tui.Confirm)
+	ropt, err := r.Setup()
+	if err != nil {
+		return fmt.Errorf("failed to setup runner: %w", err)
+	}
+
+	var usageCosts = make([]*openai.UsageCost, 0, len(inputFiles))
+	rawOnAfterProcessing := func(_ string, sr *steps.ShapeResult) {
+		if sr != nil {
+			usageCosts = append(usageCosts, openai.NewUsageCost(sr.ChatCompletion))
+		}
+	}
+
+	stdinPipeAvailable, err := ioutil.IsStdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to check if stdin is pipe: %w", err)
+	}
+	stdoutPipeAvailable, err := ioutil.IsStdoutPipeOrRedirect()
+	if err != nil {
+		return fmt.Errorf("failed to check if stdout is pipe: %w", err)
+	}
+
+	enableTUI := !c.Silent && !stdinPipeAvailable && !stdoutPipeAvailable
+	onBeforeProcessing, onAfterProcessing := createProcessingCallbackFunc(enableTUI, rawOnAfterProcessing)
 	if err := r.Run(ctx, ropt, onBeforeProcessing, onAfterProcessing); err != nil {
 		return fmt.Errorf("failed to run: %w", err)
 	}
 
 	if c.ShowCost {
-		totalUsageCost := openai.NewTotalUsageCost(usageCosts)
-		if ok, cost := totalUsageCost.TotalTotalTokensCost(); ok {
-			fmt.Printf("Total cost: $%f\n", cost)
-		} else {
-			fmt.Println("Total cost: unknown")
-		}
+		showCosts(usageCosts)
 	}
 
 	return nil
