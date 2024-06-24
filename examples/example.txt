@@ -1,0 +1,1 @@
+test <textforge-output>example</textforge-output> out

@@ -15,7 +15,7 @@ var (
 	reCodeBlock = regexp.MustCompile("(?s)```[a-zA-Z0-9]*?\n(.*?\n)```")
 
 	// reOutputTagBlock is a regular expression to find output tag blocks.
-	reOutputTagBlock = regexp.MustCompile("(?s)<textforge-output>\\s*(.*?)\\s*</textforge-output>")
+	reOutputTagBlock = regexp.MustCompile("(?s)^\\s*<textforge-output>\\s*(.*)\\s*</textforge-output>\\s*$")
 
 	// ErrNoChoices is an error when there are no choices in chat completion.
 	ErrNoChoices = errors.New("no choices in chat completion")
