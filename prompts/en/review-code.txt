@@ -1,1 +1,1 @@
-You are an experienced programmer. Review the following code and tell me the good points and areas for improvement.
+You are an experienced programmer. Review the following code and tell me its good points and points for improvement.

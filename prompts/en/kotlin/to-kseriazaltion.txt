@@ -1,1 +1,1 @@
-Convert the parts of the following program that use Jackson to use kotlinx.serialization. Keep the comments intact and give default values to @Transient.
+Convert the parts of the following program that use Jackson to use kotlinx.serialization. Keep the comments as they are, and provide default values for @Transient.

@@ -1,22 +1,42 @@
-```diff
---- original.kt	2023-11-02 12:00:00.000000000 +0900
-+++ modified.kt	2023-11-02 12:00:00.000000000 +0900
-@@ -1,6 +1,7 @@
--import com.fasterxml.jackson.annotation.JsonProperty
--import com.fasterxml.jackson.annotation.JsonIgnore
--import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-+import kotlinx.serialization.Serializable
-+import kotlinx.serialization.SerialName
-+import kotlinx.serialization.Transient
+Please modify the subsequent program to replace the usage of Jackson with kotlinx.serialization. Keep the comments as they are, and provide default values for @Transient fields.
+Finally, run the diff -u command over the entire program before and after the conversion, and return the result as-is. Ensure the header and hunk information, including the starting line, length, new starting line, and new length, are correctly recorded to allow for patch application.
 
--@JsonIgnoreProperties(ignoreUnknown = true)
-+@Serializable
- data class Person(
--    @JsonProperty("first_name") val firstName: String,
--    @JsonProperty("last_name") val lastName: String,
--    @JsonIgnore val age: Int
-+    @SerialName("first_name") val firstName: String,
-+    @SerialName("last_name") val lastName: String,
-+    @Transient val age: Int = 0
- )
-```
+--- original_program.kt	2023-10-04 14:26:36.000000000 +0900
++++ modified_program.kt	2023-10-04 14:29:18.000000000 +0900
+@@ -1,6 +1,7 @@
+ import com.fasterxml.jackson.annotation.JsonIgnore
+ import com.fasterxml.jackson.annotation.JsonProperty
+-import com.fasterxml.jackson.databind.ObjectMapper
++import kotlinx.serialization.Serializable
++import kotlinx.serialization.Transient
++import kotlinx.serialization.json.Json
+
+ class SampleClass(
+     @JsonProperty("name") val name: String,
+@@ -9,11 +10,12 @@
+     @JsonIgnore val internalData: String = ""
+ ) {
+     @JsonIgnore
+-    @Transient
+-    private var transientField: String? = null
++    @Transient
++    private var transientField: String? = ""
+ 
+-    companion object {
+-        private val mapper = ObjectMapper()
++    @Serializable
++    data class CompanionObject(
++        @Transient val mapper: Json = Json { ignoreUnknownKeys = true }
++    )
+ 
+         fun fromJson(json: String): SampleClass {
+-            return mapper.readValue(json, SampleClass::class.java)
++            return Json.decodeFromString(SampleClass.serializer(), json)
+         }
+
+         fun toJson(sample: SampleClass): String {
+-            return mapper.writeValueAsString(sample)
++            return Json.encodeToString(SampleClass.serializer(), sample)
+         }
+     }
+ }

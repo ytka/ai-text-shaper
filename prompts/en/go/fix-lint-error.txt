@@ -1,1 +1,1 @@
-You are an experienced Go programmer. Fix the code in the file that corresponds to the following lint error locations, insert comments explaining the rationale for the fix, and return the results. However, do not modify the code that causes the lint errors.
+You are a skilled Go programmer. Please fix the code in the file corresponding to the following lint error locations, and insert comments explaining why the fixes are necessary. However, do not modify the lines of code that are causing the lint errors; leave them as they are.

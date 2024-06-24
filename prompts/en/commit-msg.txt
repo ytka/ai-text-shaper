@@ -1,1 +1,1 @@
-Write a commit message from the Git diff. Write it in English.
+Please write a commit message from the Git diff. Write it in English.
