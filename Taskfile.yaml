@@ -33,7 +33,7 @@ tasks:
     desc: Fix lint errors
     cmds:
       - golangci-lint run --fix
-  lint-fix-ai:
+  lint-fix-forge:
     desc: Fix lint errors
     cmds:
        - golangci-lint run > /tmp/lint.txt || true

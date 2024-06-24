@@ -169,11 +169,11 @@ In this project, textforge is used for development.
 It is registered as a task in Taskfile.yaml, and tasks such as AI code review correction and translation processing are automated.
 We will introduce the contents of the tasks to show what kind of automation can be done.
 
-### lint-fix-ai
+### lint-fix-forge
 
 Automatically fix static analysis errors using AI. It can fix issues that cannot be fixed with the normal lint fix option (though not always).
 ```sh
-task lint-fix-ai
+task lint-fix-forge
 ```
 
 ### auto-review-changed

@@ -169,11 +169,11 @@ textforge -c /path/to/inputfile.txt
 Taskfile.yamlにタスクとして登録し、タスクにはAIコードレビューによる修正や翻訳処理などを自動化しています。
 どのような自動化ができるかタスクの内容を紹介します。
 
-### lint-fix-ai
+### lint-fix-forge
 
 AIを使用して静的解析のエラーを自動修正します。通常の lint fixオプションでは修正できない問題も修正できます（できない場合もある）。
 ```sh
-task lint-fix-ai
+task lint-fix-forge
 ```
 
 ### auto-review-changed
