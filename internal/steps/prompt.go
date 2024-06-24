@@ -15,6 +15,10 @@ func GetPromptText(prompt, promptPath string) (string, error) {
 		return "", ErrPromptRequired
 	}
 
+	if promptPath == "-" {
+		return getInputFromStdin()
+	}
+
 	if prompt == "" && promptPath != "" {
 		text, err := os.ReadFile(promptPath)
 		if err != nil {
