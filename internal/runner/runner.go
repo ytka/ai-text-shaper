@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ytka/ai-text-shaper/internal/openai"
+	"github.com/ytka/textforge/internal/openai"
 	"log"
 	"os"
 
-	"github.com/ytka/ai-text-shaper/internal/ioutil"
-	"github.com/ytka/ai-text-shaper/internal/steps"
+	"github.com/ytka/textforge/internal/ioutil"
+	"github.com/ytka/textforge/internal/steps"
 )
 
 var (

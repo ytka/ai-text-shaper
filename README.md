@@ -1,27 +1,27 @@
-# ai-text-shaper
+# textforge
 
 ## Overview
 
-`ai-text-shaper` is a CLI tool for processing text files such as source code and Markdown using the OpenAI API. How to process the text is specified by giving a prompt, such as "translate to English." By customizing the prompt, the tool can be used for various purposes such as code refactoring, translation, or converting to a specified format. Examples of prompts can be found in the files under the `prompts/` directory.
+`textforge` is a CLI tool for processing text files such as source code and Markdown using the OpenAI API. How to process the text is specified by giving a prompt, such as "translate to English." By customizing the prompt, the tool can be used for various purposes such as code refactoring, translation, or converting to a specified format. Examples of prompts can be found in the files under the `prompts/` directory.
 
-`ai-text-shaper` formats the given prompt to make it easier to process before sending it to OpenAI's chat API, and then formats the result and outputs it to the standard output. Additionally, the tool can rewrite the original file, write to a specified path, or allow you to verify the output before writing.
+`textforge` formats the given prompt to make it easier to process before sending it to OpenAI's chat API, and then formats the result and outputs it to the standard output. Additionally, the tool can rewrite the original file, write to a specified path, or allow you to verify the output before writing.
 
 ## Installation
 
-To install `ai-text-shaper`, download the binaries from the following link:
+To install `textforge`, download the binaries from the following link:
 
-[https://github.com/ytka/ai-text-shaper/releases](https://github.com/ytka/ai-text-shaper/releases)
+[https://github.com/ytka/textforge/releases](https://github.com/ytka/textforge/releases)
 
 ## Setting the OpenAI API Key
 
-This tool requires an API key to use the OpenAI API. Create a file named `.ai-text-shaper-apikey` in your home directory and write your OpenAI API key in it.
+This tool requires an API key to use the OpenAI API. Create a file named `.textforge-apikey` in your home directory and write your OpenAI API key in it.
 
 ## Usage
 
-The general usage pattern for `ai-text-shaper` is as follows:
+The general usage pattern for `textforge` is as follows:
 
 ```sh
-ai-text-shaper [options] [input files...]
+textforge [options] [input files...]
 ```
 
 You can specify one or more input files. If no input files are specified, it reads from the standard input.
@@ -70,7 +70,7 @@ You can specify one or more input files. If no input files are specified, it rea
 To give a prompt from the command line:
 
 ```sh
-ai-text-shaper -p "prompt text" /path/to/inputfile.txt
+textforge -p "prompt text" /path/to/inputfile.txt
 ```
 
 ### Using a Prompt File
@@ -78,7 +78,7 @@ ai-text-shaper -p "prompt text" /path/to/inputfile.txt
 To give a prompt from a file:
 
 ```sh
-ai-text-shaper -P /path/to/promptfile.txt /path/to/inputfile.txt
+textforge -P /path/to/promptfile.txt /path/to/inputfile.txt
 ```
 
 ### Enabling Detailed Output
@@ -86,7 +86,7 @@ ai-text-shaper -P /path/to/promptfile.txt /path/to/inputfile.txt
 To enable detailed output:
 
 ```sh
-ai-text-shaper -v /path/to/inputfile.txt
+textforge -v /path/to/inputfile.txt
 ```
 
 ### Suppressing Output
@@ -94,7 +94,7 @@ ai-text-shaper -v /path/to/inputfile.txt
 To suppress all output:
 
 ```sh
-ai-text-shaper -s /path/to/inputfile.txt
+textforge -s /path/to/inputfile.txt
 ```
 
 ### Showing Differences
@@ -102,7 +102,7 @@ ai-text-shaper -s /path/to/inputfile.txt
 To show the differences between the input and output texts:
 
 ```sh
-ai-text-shaper -d /path/to/inputfile.txt
+textforge -d /path/to/inputfile.txt
 ```
 
 ### Writing to a File
@@ -110,7 +110,7 @@ ai-text-shaper -d /path/to/inputfile.txt
 To write the result to a specific output file:
 
 ```sh
-ai-text-shaper -o /path/to/outputfile.txt /path/to/inputfile.txt
+textforge -o /path/to/outputfile.txt /path/to/inputfile.txt
 ```
 
 ### Rewriting the Input File
@@ -118,7 +118,7 @@ ai-text-shaper -o /path/to/outputfile.txt /path/to/inputfile.txt
 To rewrite the input file with the result:
 
 ```sh
-ai-text-shaper -r /path/to/inputfile.txt
+textforge -r /path/to/inputfile.txt
 ```
 
 ### Using the First Code Block
@@ -126,7 +126,7 @@ ai-text-shaper -r /path/to/inputfile.txt
 To use the first code block of the output text:
 
 ```sh
-ai-text-shaper -f /path/to/inputfile.txt
+textforge -f /path/to/inputfile.txt
 ```
 
 ### Confirmation Before Writing
@@ -134,7 +134,7 @@ ai-text-shaper -f /path/to/inputfile.txt
 To ask for confirmation before writing to a file:
 
 ```sh
-ai-text-shaper -c /path/to/inputfile.txt
+textforge -c /path/to/inputfile.txt
 ```
 
 ## License

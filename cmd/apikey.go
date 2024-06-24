@@ -2,13 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/ytka/ai-text-shaper/internal/openai"
+	"github.com/ytka/textforge/internal/openai"
 	"os"
 	"strings"
 )
 
 func getAPIKeyFilePath() string {
-	return os.Getenv("HOME") + "/.ai-text-shaper-apikey"
+	return os.Getenv("HOME") + "/.textforge-apikey"
 }
 
 func checkAPIKeyFileExists() bool {

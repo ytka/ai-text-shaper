@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ytka/ai-text-shaper/internal/openai"
+	"github.com/ytka/textforge/internal/openai"
 )
 
 var (
@@ -99,7 +99,7 @@ func (s *Shaper) requestCreateChatCompletion(ctx context.Context, prompt string)
 // optimizePrompt refines the prompt by incorporating additional information.
 func optimizePrompt(inputFilePath, prompt, input string) string {
 	supplements := []string{
-		"The subject of the Instruction is the area enclosed by the ai-text-shaper-input tag.",
+		"The subject of the Instruction is the area enclosed by the textforge-input tag.",
 		"The result should be returned in the language of the Instruction, but if the Instruction has a language specification, that language should be given priority.",
 		"Only results should be returned and no explanation or supplementary information is required, but additional explanation or details should be provided if explicitly requested in the instructions.",
 	}
@@ -108,7 +108,7 @@ func optimizePrompt(inputFilePath, prompt, input string) string {
 	if inputFilePath != "" && inputFilePath != "-" {
 		header = fmt.Sprintf("filepath=\"%s\"\n", inputFilePath)
 	}
-	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<ai-text-shaper-input>\n%s\n<ai-text-shaper-input>", prompt, supplementation, header, input)
+	return fmt.Sprintf("<Instruction>%s. (%s)</Instruction>\n%s<textforge-input>\n%s\n<textforge-input>", prompt, supplementation, header, input)
 }
 
 // optimizeResponseResult refines the AI's response, potentially extracting code blocks.

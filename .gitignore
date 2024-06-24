@@ -2,7 +2,7 @@
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
 # Binaries for programs and plugins
-/ai-text-shaper
+/textforge
 *.exe
 *.exe~
 *.dll

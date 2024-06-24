@@ -35,7 +35,7 @@ tasks:
   import-fix:
     desc: Fix import errors
     cmds:
-      - goimports -w -local github.com/ytka/ai-text-shaper .
+      - goimports -w -local github.com/ytka/textforge .
   build:
     desc: Build the project
     vars:
@@ -51,10 +51,10 @@ tasks:
     desc: Install dependencies
     deps: [build]
     cmds:
-      - cp ./ai-text-shaper ~/bin/
+      - cp ./textforge ~/bin/
   dl-source:
     cmds:
-      - curl -L -O https://github.com/ytka/ai-text-shaper/archive/main.zip
+      - curl -L -O https://github.com/ytka/textforge/archive/main.zip
   translate-prompts-to-en:
     desc: Translate the commit message to English
     cmds:

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/pkg/errors"
-	"github.com/ytka/ai-text-shaper/internal/openai"
-	"github.com/ytka/ai-text-shaper/internal/steps"
+	"github.com/ytka/textforge/internal/openai"
+	"github.com/ytka/textforge/internal/steps"
 	"log"
 	"os"
 )

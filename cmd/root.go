@@ -4,25 +4,25 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ytka/ai-text-shaper/internal/steps"
+	"github.com/ytka/textforge/internal/steps"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
 
-	"github.com/ytka/ai-text-shaper/internal/ioutil"
-	"github.com/ytka/ai-text-shaper/internal/openai"
-	"github.com/ytka/ai-text-shaper/internal/runner"
-	"github.com/ytka/ai-text-shaper/internal/tui"
+	"github.com/ytka/textforge/internal/ioutil"
+	"github.com/ytka/textforge/internal/openai"
+	"github.com/ytka/textforge/internal/runner"
+	"github.com/ytka/textforge/internal/tui"
 )
 
 var (
 	c       runner.Config
 	rootCmd = &cobra.Command{
-		Use:   "ai-text-shaper",
-		Short: "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
-		Long:  "ai-text-shaper is a tool designed to shape and transform text using OpenAI's GPT model.",
+		Use:   "textforge",
+		Short: "textforge is a tool designed to shape and transform text using OpenAI's GPT model.",
+		Long:  "textforge is a tool designed to shape and transform text using OpenAI's GPT model.",
 		RunE: func(_ *cobra.Command, args []string) error {
 			if !checkAPIKeyFileExists() {
 				return errors.New("API key file not found. Please create a file at '" + getAPIKeyFilePath() + "' with your OpenAI API key")
