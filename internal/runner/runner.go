@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/ytka/textforge/internal/ioutil"
 	"github.com/ytka/textforge/internal/openai"
 	"github.com/ytka/textforge/internal/steps"
-	"log"
 )
 
 var (

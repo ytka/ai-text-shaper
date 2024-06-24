@@ -3,11 +3,12 @@ package runner
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/pkg/errors"
 	"github.com/ytka/textforge/internal/openai"
 	"github.com/ytka/textforge/internal/steps"
-	"log"
-	"os"
 )
 
 type Process struct {

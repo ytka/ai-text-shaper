@@ -24,7 +24,7 @@ func getInputFromStdin() (string, error) {
 }
 
 // GetInputText reads text from a file specified by inputFilePath or from stdin if the path is "-".
-func GetInputText(inputFilePath string) (string, error) { // fixed: Function name should follow MixedCaps style - https://google.github.io/styleguide/go/guide.html#mixed-caps
+func GetInputText(inputFilePath string) (string, error) {
 	if inputFilePath == "-" {
 		return getInputFromStdin()
 	}

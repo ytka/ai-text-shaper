@@ -8,7 +8,7 @@ type Pricing struct {
 	OutputTokens           float64
 }
 
-const OneMillion = 1000_000
+const OneMillion = 1_000_000
 
 var pricingList = []Pricing{
 	{Model: "gpt-4o", InputTokensCostDollar: 5, InputTokens: OneMillion, OutputTokensCostDollar: 15, OutputTokens: OneMillion},
@@ -16,6 +16,7 @@ var pricingList = []Pricing{
 	{Model: "gpt-3.5-turbo-0125", InputTokensCostDollar: 0.5, InputTokens: OneMillion, OutputTokensCostDollar: 1.5, OutputTokens: OneMillion},
 	{Model: "gpt-3.5-turbo-instruct", InputTokensCostDollar: 1.5, InputTokens: OneMillion, OutputTokensCostDollar: 2, OutputTokens: OneMillion},
 }
+
 var pricingMap = map[string]Pricing{}
 
 func init() {

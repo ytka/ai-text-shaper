@@ -13,11 +13,11 @@ import (
 func Confirm(message string) (bool, error) {
 	m := newConfirmModel(message)
 
-	fM, err := tea.NewProgram(m).Run()
+	fm, err := tea.NewProgram(m).Run()
 	if err != nil {
 		return false, errors.Wrap(err, "failed to run the confirmation program")
 	}
-	cm, ok := fM.(confirmModel)
+	cm, ok := fm.(confirmModel)
 	if !ok {
 		return false, errors.New("failed to assert type confirmModel")
 	}

@@ -4,12 +4,14 @@ type TotalUsageCost struct {
 	UsageCosts []*UsageCost
 }
 
+// NewTotalUsageCost creates a new TotalUsageCost instance.
 func NewTotalUsageCost(usageCosts []*UsageCost) *TotalUsageCost {
 	return &TotalUsageCost{
 		UsageCosts: usageCosts,
 	}
 }
 
+// TotalPromptTokens calculates the total number of prompt tokens.
 func (tuc *TotalUsageCost) TotalPromptTokens() int {
 	totalPromptTokens := 0
 	for _, uc := range tuc.UsageCosts {
@@ -18,6 +20,7 @@ func (tuc *TotalUsageCost) TotalPromptTokens() int {
 	return totalPromptTokens
 }
 
+// TotalCompletionTokens calculates the total number of completion tokens.
 func (tuc *TotalUsageCost) TotalCompletionTokens() int {
 	totalCompletionTokens := 0
 	for _, uc := range tuc.UsageCosts {
@@ -26,6 +29,7 @@ func (tuc *TotalUsageCost) TotalCompletionTokens() int {
 	return totalCompletionTokens
 }
 
+// TotalTotalTokens calculates the total number of tokens.
 func (tuc *TotalUsageCost) TotalTotalTokens() int {
 	totalTokens := 0
 	for _, uc := range tuc.UsageCosts {
@@ -34,6 +38,7 @@ func (tuc *TotalUsageCost) TotalTotalTokens() int {
 	return totalTokens
 }
 
+// TotalPromptTokensCost calculates the total cost of prompt tokens.
 func (tuc *TotalUsageCost) TotalPromptTokensCost() (bool, float64) {
 	var totalCost, cost float64
 	var ok bool
@@ -46,6 +51,7 @@ func (tuc *TotalUsageCost) TotalPromptTokensCost() (bool, float64) {
 	return true, totalCost
 }
 
+// TotalCompletionTokensCost calculates the total cost of completion tokens.
 func (tuc *TotalUsageCost) TotalCompletionTokensCost() (bool, float64) {
 	var totalCost, cost float64
 	var ok bool
@@ -58,6 +64,7 @@ func (tuc *TotalUsageCost) TotalCompletionTokensCost() (bool, float64) {
 	return true, totalCost
 }
 
+// TotalTotalTokensCost calculates the total cost of tokens.
 func (tuc *TotalUsageCost) TotalTotalTokensCost() (bool, float64) {
 	var totalCost, cost float64
 	var ok bool

@@ -50,7 +50,7 @@ func init() {
 	rootCmd.Flags().StringVarP(&c.PromptPath, "prompt-path", "P", "", "Prompt file path")
 	rootCmd.Flags().BoolVarP(&c.PromptOptimize, "prompt-optimize", "O", true, "Optimize prompt text")
 
-	// model options
+	// Model options
 	rootCmd.Flags().StringVarP(&c.Model, "model", "m", "gpt-4o", "model to use for text generation")
 	rootCmd.Flags().IntVarP(&c.MaxTokens, "max-tokens", "t", 0, "Max tokens to generate")
 	rootCmd.Flags().IntVar(&c.MaxCompletionRepeatCount, "max-completion-repeat-count", 1, "Max completion repeat count")
