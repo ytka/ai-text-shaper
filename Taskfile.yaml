@@ -2,40 +2,7 @@ version: '3'
 
 
 tasks:
-  tidy:
-    desc: Tidy the project
-    cmds:
-      - go mod tidy
-  lint:
-    desc: Lint the project
-    cmds:
-      - golangci-lint run
-  lint-fix:
-    desc: Fix lint errors
-    cmds:
-      - golangci-lint run --fix
-  lint-fix-ai:
-    desc: Fix lint errors
-    cmds:
-       - golangci-lint run > /tmp/lint.txt || true
-       - cat /tmp/lint.txt
-       - |
-         files=$(cat /tmp/lint.txt | awk -F: '/.go:/ {print $1}' | sort | uniq) && cat /tmp/lint.txt | go run main.go --rewrite -P=prompts/ja/go/fix-lint-error.txt $files
-  auto-review-changed:
-    desc: Review the project
-    cmds:
-      - |
-        changed=$(git diff --name-only @{push} | grep -E '.go$|.yaml|.yml|.md' | tr '\n' ' ') && go run main.go --rewrite -p="以下のファイルをレビューし、重要な問題があれば修正して。" $changed
-  auto-review:
-    desc: Review the project
-    cmds:
-      - |
-        shopt -s globstar      
-        go run main.go --rewrite -P=prompts/ja/go/review-fix.txt **/*.go
-  import-fix:
-    desc: Fix import errors
-    cmds:
-      - goimports -w -local github.com/ytka/textforge .
+  # build the project
   build:
     desc: Build the project
     vars:
@@ -52,9 +19,48 @@ tasks:
     deps: [build]
     cmds:
       - cp ./textforge ~/bin/
-  dl-source:
+  # dependencies
+  tidy:
+    desc: Tidy the project
     cmds:
-      - curl -L -O https://github.com/ytka/textforge/archive/main.zip
+      - go mod tidy
+  # static analysis
+  lint:
+    desc: Lint the project
+    cmds:
+      - golangci-lint run
+  lint-fix:
+    desc: Fix lint errors
+    cmds:
+      - golangci-lint run --fix
+  lint-fix-ai:
+    desc: Fix lint errors
+    cmds:
+       - golangci-lint run > /tmp/lint.txt || true
+       - cat /tmp/lint.txt
+       - |
+         files=$(cat /tmp/lint.txt | awk -F: '/.go:/ {print $1}' | sort | uniq) && cat /tmp/lint.txt | go run main.go --rewrite -P=prompts/ja/go/fix-lint-error.txt $files
+  import-fix:
+    desc: Fix import errors
+    cmds:
+      - goimports -w -local github.com/ytka/textforge .
+  # forge development
+  auto-review-changed:
+    desc: Review the project
+    cmds:
+      - |
+        changed=$(git diff --name-only @{push} | grep -E '.go$|.yaml|.yml|.md' | tr '\n' ' ') && go run main.go --rewrite -p="以下のファイルをレビューし、重要な問題があれば修正して。" $changed
+  auto-review:
+    desc: Review the project
+    cmds:
+      - |
+        shopt -s globstar      
+        go run main.go --rewrite -P=prompts/ja/go/review-fix.txt **/*.go
+  auto-commit:
+    desc: Commit changes to the repository
+    cmds:
+      - git diff | go run main.go -P=prompts/en/commit-msg.txt -c -f --outpath=/tmp/commit-msg && git add . && git commit -m "$(cat /tmp/commit-msg)" || echo "Abort"
+  # forge documentation
   translate-prompts-to-en:
     desc: Translate the commit message to English
     cmds:
@@ -70,13 +76,7 @@ tasks:
   translate-readme-to-en:
     cmds:
       - go run main.go -p "Translate to English." README.ja.md --outpath README.md
-  ai-fix-code-dry:
-    desc: Fix code with AI
+  # other
+  dl-source:
     cmds:
-      - |
-        shopt -s globstar      
-        go run main.go --dry-run --rewrite -P=prompts/ja/fix-go.txt **/*.go
-  auto-commit:
-    desc: Commit changes to the repository
-    cmds:
-      - git diff | go run main.go -P=prompts/en/commit-msg.txt -c -f --outpath=/tmp/commit-msg && git add . && git commit -m "$(cat /tmp/commit-msg)" || echo "Abort"
+      - curl -L -O https://github.com/ytka/textforge/archive/main.zip
